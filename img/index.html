@@ -607,7 +607,7 @@
 		const SHEET_URL_ADICIONAIS = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=290055706";
 		const SHEET_URL_CONFIGURACOES = "https://docs.google.com/spreadsheets/d/12Hrr5dQHt82ptzLpCmN5bCJFszQ7dFcO06GxLadBRoQ/gviz/tq?tqx=out:json&gid=1791928589";
 		const SHEET_URL_CATEGORIAS_ORDEM = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=1852665090";
-		const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiK1VBRTssi2-bl_DR_3pG-1zf7tePbdmgZ0k2b6hQT3ajda4VVPzyNJUjkFdkrhdO/exec";
+		const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw1nPTji-bvHjB9Xwxxz__MUN575rlTPNr-RyH1fp8vFPtDjdAGHWPgYBPHuKrhGein/exec";
 		const SHEET_URL_SABORES = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=549050232"; // Novo URL para a aba de sabores
 
 		let nome = localStorage.getItem("nomeCliente") || "";
@@ -848,7 +848,7 @@
 			}
 			
 			try {
-				const response = await fetch('https://script.google.com/macros/s/AKfycbyChAN4TbWQwfqAOuPu_zn1sI8uMiBYkOXaRNYL7sJIClWYgWOvAXonUo1IqBCH6Wki/exec');
+				const response = await fetch('https://script.google.com/macros/s/AKfycbzhsVb0AZKLZn-nhyDA1TFp5_5OrGovJHsq70pVPOExPrROK0dQLwC421Gt_Ee6MHgmyQ/exec');
 				const data = await response.json();
 				const serverTime = new Date(data.datetime);
 				const diaAtual = diasDaSemana[serverTime.getDay()];
