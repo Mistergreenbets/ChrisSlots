@@ -2052,7 +2052,7 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 				
 				if (isMobile) {
 					// No celular tenta abrir direto no app
-					url = `whatsapp://send?phone=${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
+					url = `https://api.whatsapp.com/send?phone=55${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
 				} else {
 					// No desktop abre no WhatsApp Web
 					url = `https://wa.me/${whatsappOrderNumber}?text=${msg}`;
@@ -2211,4 +2211,5 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 
 
 	</body>
+
 	</html>
