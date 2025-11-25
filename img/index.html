@@ -2050,10 +2050,9 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 				// 🚀 ABRIR WHATSAPP DE FORMA UNIVERSAL (iPhone + Android + Desktop)
 const url = `https://api.whatsapp.com/send?phone=55${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
 
-// Abre o link do pedido
-window.open(url, "_blank");
-
-
+// 🚀 Abertura direta — exigência do iOS
+    window.location.href = url;
+}
 				carrinho = [];
 				localStorage.removeItem("carrinho");
 				renderCarrinho();
@@ -2207,4 +2206,5 @@ window.open(url, "_blank");
 	</body>
 
 	</html>
+
 
