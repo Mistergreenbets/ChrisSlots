@@ -597,18 +597,18 @@
 		<p id="footer-contact-phones"></p>
 	  </div>
 	  <div class="footer-desenvolvido">
-		<p>Desenvolvido por: <a href="#" target="_blank">Emerson Marks</a></p>
+		<p>Feito com ❤️ para pizza lovers. <a href="#" target="_blank"></a></p>
 	  </div>
 	</footer>
 
 	<script>
-		const SHEET_URL_PRODUTOS = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=0";
-		const SHEET_URL_BAIRROS = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=498087514";
-		const SHEET_URL_ADICIONAIS = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=290055706";
-		const SHEET_URL_CONFIGURACOES = "https://docs.google.com/spreadsheets/d/12Hrr5dQHt82ptzLpCmN5bCJFszQ7dFcO06GxLadBRoQ/gviz/tq?tqx=out:json&gid=1791928589";
-		const SHEET_URL_CATEGORIAS_ORDEM = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=1852665090";
+		const SHEET_URL_PRODUTOS = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=0";
+		const SHEET_URL_BAIRROS = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=498087514";
+		const SHEET_URL_ADICIONAIS = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=290055706";
+		const SHEET_URL_CONFIGURACOES = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=1791928589";
+		const SHEET_URL_CATEGORIAS_ORDEM = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=1852665090";
 		const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw1nPTji-bvHjB9Xwxxz__MUN575rlTPNr-RyH1fp8vFPtDjdAGHWPgYBPHuKrhGein/exec";
-		const SHEET_URL_SABORES = "https://docs.google.com/spreadsheets/d/1AA31u2rD5TdbcSU9We8yHNYY83Up3PQeNf0HeoafNF4/gviz/tq?tqx=out:json&gid=549050232"; // Novo URL para a aba de sabores
+		const SHEET_URL_SABORES = "https://docs.google.com/spreadsheets/d/1n-2BRfaNUMCHknWm8euIimFwgv5daFePKHJli47rvb8/gviz/tq?tqx=out:json&gid=549050232"; // Novo URL para a aba de sabores
 
 		let nome = localStorage.getItem("nomeCliente") || "";
 
@@ -790,10 +790,11 @@
 					}
 
 					const contactPhones = configRow[6]?.v;
-					const deliveryAtivo = configRow[12]?.v?.toLowerCase() === "sim";
-					const retiradaAtivo = configRow[13]?.v?.toLowerCase() === "sim";
-					const mesaAtivo = configRow[14]?.v?.toLowerCase() === "sim";
-					renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa: mesaAtivo });
+					const deliveryAtivo = configRow[12]?.v?.toLowerCase?.() === "sim" || true;
+const retiradaAtivo = configRow[13]?.v?.toLowerCase?.() === "sim" || true;
+const mesaAtivo = configRow[14]?.v?.toLowerCase?.() === "sim" || true;
+
+renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa: mesaAtivo });
 					if (contactPhones) {
 						document.getElementById("footer-contact-phones").textContent = contactPhones;
 					}
