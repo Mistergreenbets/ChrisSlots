@@ -2047,12 +2047,19 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 				
 				mostrarPopupMensagem("Aviso", "✅ Pedido feito!");
 				
-				// 🚀 ABRIR WHATSAPP DE FORMA UNIVERSAL (iPhone + Android + Desktop)
-const url = `https://api.whatsapp.com/send?phone=55${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
+				// Detecta se está em celular (user agent simples)
+				const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+				
+				if (isMobile) {
+					// No celular tenta abrir direto no app
+					url = `whatsapp://send?phone=${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
+				} else {
+					// No desktop abre no WhatsApp Web
+					url = `https://wa.me/${whatsappOrderNumber}?text=${msg}`;
+				}
 
-// 🚀 Abertura direta — exigência do iOS
-    window.location.href = url;
-}
+				window.open(url, "_blank");
+
 				carrinho = [];
 				localStorage.removeItem("carrinho");
 				renderCarrinho();
@@ -2206,5 +2213,6 @@ const url = `https://api.whatsapp.com/send?phone=55${whatsappOrderNumber}&text=$
 	</body>
 
 	</html>
+
 
 
