@@ -2047,18 +2047,11 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 				
 				mostrarPopupMensagem("Aviso", "✅ Pedido feito!");
 				
-				// Detecta se está em celular (user agent simples)
-				const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-				
-				if (isMobile) {
-					// No celular tenta abrir direto no app
-					url = `whatsapp://send?phone=${whatsappOrderNumber}&text=${encodeURIComponent(msg)}`;
-				} else {
-					// No desktop abre no WhatsApp Web
-					url = `https://wa.me/${whatsappOrderNumber}?text=${msg}`;
-				}
+			const mensagem = encodeURIComponent(msg);
+            const url = `https://wa.me/${whatsappOrderNumber}?text=${mensagem}`;
 
-				window.open(url, "_blank");
+            // Redireciona direto (Safari permite)
+            window.location.href = url;
 
 				carrinho = [];
 				localStorage.removeItem("carrinho");
@@ -2213,6 +2206,7 @@ renderOpcoesTipoPedido({ delivery: deliveryAtivo, retirada: retiradaAtivo, mesa:
 	</body>
 
 	</html>
+
 
 
 
