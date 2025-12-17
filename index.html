@@ -6,7 +6,6 @@
 <title>Catálogo – Rabisco & Arte</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* --- seu CSS original mantido (compactado aqui, sem mudanças visuais) --- */
 *{ margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
 body{ background:#F9F8FC; color:#6C5243; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
 .container-vermelho{ background:linear-gradient(90deg,#DED8CC,#ADAC8C); padding:12px; text-align:center; font-weight:600; }
@@ -66,26 +65,11 @@ footer a:hover { text-decoration:underline; }
 #page-info { color:#ADAC8C; font-weight:800; }
 @media(max-width:900px){ .produto img{ height:200px; } }
 @media(max-width:700px){
-  main{
-    grid-template-columns:repeat(2, 1fr);
-  }
-
-  .produto img{
-    height:150px;
-  }
-
-  .produto h2{
-    font-size:14px;
-  }
-
-  .produto p{
-    font-size:12px;
-  }
-
-  .whatsapp{
-    right:12px;
-    bottom:12px;
-  }
+  main{ grid-template-columns:repeat(2, 1fr); }
+  .produto img{ height:150px; }
+  .produto h2{ font-size:14px; }
+  .produto p{ font-size:12px; }
+  .whatsapp{ right:12px; bottom:12px; }
 }
 </style>
 </head>
@@ -100,10 +84,8 @@ footer a:hover { text-decoration:underline; }
 </header>
 
 <h3>CATÁLOGO PREMIUM</h3>
-
 <iframe src="banner.html" style="width:100%; height:260px; border:none; overflow:hidden;" loading="lazy"></iframe>
 
-<!-- FILTROS -->
 <div class="filtro-container" id="filtroContainer" aria-label="Filtrar produtos">
   <button data-cat="todos" class="ativo">Todos</button>
   <button data-cat="canecas">Canecas</button>
@@ -113,10 +95,8 @@ footer a:hover { text-decoration:underline; }
   <button data-cat="vestuario">Vestuário</button>
 </div>
 
-<!-- PRODUTOS -->
 <main id="catalogo"></main>
 
-<!-- PAGINAÇÃO -->
 <div class="pagination-container" aria-hidden="false">
   <button id="prev">◀ Anterior</button>
   <span id="page-info">Página 1 de 1</span>
@@ -129,16 +109,14 @@ footer a:hover { text-decoration:underline; }
   <div class="social-icons">
     <a href="tel:+5585994083703"><i class="fas fa-phone"></i></a>
     <a href="https://instagram.com/rabisco.earte" target="_blank"><i class="fab fa-instagram"></i></a>
-    <a href="https://wa.me/5585994083703?text=Oi!%20Quero%20mais%20informa%C3%A7%C3%B5es%20sobre%20os%20produtos%20personalizados." target="_blank"><i class="fab fa-whatsapp"></i></a>
+    <a href="https://wa.me/5585994083703" target="_blank"><i class="fab fa-whatsapp"></i></a>
   </div>
 </footer>
 
-<!-- WHATSAPP -->
-<a class="whatsapp" href="https://wa.me/5585994083703?text=Oi!%20Quero%20mais%20informa%C3%A7%C3%B5es%20sobre%20os%20produtos%20personalizados." target="_blank" aria-label="WhatsApp">
+<a class="whatsapp" href="https://wa.me/5585994083703" target="_blank" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
 </a>
 
-<!-- MODAL -->
 <div id="modal" aria-hidden="true">
   <div class="modal-premium" role="dialog" aria-modal="true">
     <span class="modal-close" onclick="fecharModal()">✖</span>
@@ -149,13 +127,12 @@ footer a:hover { text-decoration:underline; }
       <p id="viewers" class="viewers"></p>
     </div>
     <div class="modal-form">
-  <input type="text" id="nome" placeholder="👤 Seu nome">
-  <input type="text" id="cidade" placeholder="📍 Cidade">
-  <div class="status-box">
-    <p id="total"></p>
-  </div>
-</div>
-
+      <input type="text" id="nome" placeholder="👤 Seu nome">
+      <input type="text" id="cidade" placeholder="📍 Cidade">
+      <div class="status-box">
+        <p id="total"></p>
+      </div>
+    </div>
     <button class="btn-whatsapp" onclick="enviarPedido()"><i class="fab fa-whatsapp"></i> Finalizar no WhatsApp</button>
   </div>
 </div>
@@ -164,41 +141,35 @@ footer a:hover { text-decoration:underline; }
 /* ===== CAPTURA AUTOMÁTICA DE AFILIADO ===== */
 (function(){
   const params = new URLSearchParams(window.location.search);
-  const afi = params.get("afiliado"); // captura "afiliado" da URL
+  const afi = params.get("afiliado");
   if(afi){
     localStorage.setItem("afiliado", afi.toUpperCase());
   } else {
-    localStorage.removeItem("afiliado"); // limpa afiliado antigo se não houver parâmetro
+    localStorage.removeItem("afiliado");
   }
 })();
-</script>
 
-
-<script>
-/* ========== CONFIG ========== */
+/* ===== CONFIGURAÇÕES ===== */
 const SHEET_API_URL = "https://Mistergreenbets.github.io/RabiscoeArte/produtos.json";
-const telefone = "5585994083703";
+const TELEFONE = "5585994083703";
 
-/* ========== ESTADO GLOBAL ========== */
+/* ===== VARIÁVEIS GLOBAIS ===== */
 let produtos = [];
 let paginaAtual = 1;
 let categoriaAtual = "todos";
 const produtosPorPagina = 6;
+let precoAtual = 0;
+let totalFinal = 0;
+let produtoAtualNome = "";
 
-let precoAtual = 0;        // preço do produto antes do cupom (número)
-let totalFinal = 0;        // preço final (após cupom)
-let produtoAtualNome = ""; // nome do produto para o modal
-
-/* ========== HELPERS ========== */
+/* ===== HELPERS ===== */
 function safeString(v){ return String(v || "").trim(); }
 
-/* ========== CARREGAR PRODUTOS ========== */
+/* ===== CARREGAR PRODUTOS ===== */
 async function carregarProdutos(){
   try{
     const res = await fetch(SHEET_API_URL);
     const data = await res.json();
-
-    // normalizar categorias e garantir campos mínimos
     produtos = data.map(p => ({
       nome: safeString(p.nome),
       preco: Number(String(p.preco).replace(",", ".")) || 0,
@@ -207,7 +178,6 @@ async function carregarProdutos(){
       descricao: safeString(p.descricao),
       badge: safeString(p.badge)
     }));
-
     renderizarCards();
     iniciarSistemaCatalogo();
   }catch(err){
@@ -216,11 +186,10 @@ async function carregarProdutos(){
   }
 }
 
-/* ========== RENDER CARDS (uso data-attrs para robustez) ========== */
+/* ===== RENDER CARDS ===== */
 function renderizarCards(){
   const catalogo = document.getElementById("catalogo");
   catalogo.innerHTML = "";
-
   produtos.forEach(p => {
     const precoStr = p.preco.toFixed(2);
     const card = document.createElement("div");
@@ -244,7 +213,6 @@ function renderizarCards(){
     catalogo.appendChild(card);
   });
 
-  // ligar eventos dos botões de cada card (robusto, evita problemas com aspas)
   document.querySelectorAll(".btn-encomendar").forEach(btn=>{
     btn.addEventListener("click", function(){
       const card = this.closest(".produto");
@@ -253,123 +221,56 @@ function renderizarCards(){
   });
 }
 
-/* ========== ABRIR MODAL (via elemento card) ========== */
+/* ===== ABRIR MODAL ===== */
 function abrirModalFromCard(card){
-  const nome = card.dataset.nome;
-  const preco = parseFloat(card.dataset.preco) || 0;
-  const imagem = card.dataset.imagem || "";
-
-  // preencher globals
-  precoAtual = Number(preco);
+  produtoAtualNome = card.dataset.nome;
+  precoAtual = parseFloat(card.dataset.preco) || 0;
   totalFinal = precoAtual;
-  produtoAtualNome = nome;
-
-  // atualizar modal UI
-  document.getElementById("produtoNome").innerText = `${nome} — R$ ${precoAtual.toFixed(2)}`;
-  document.getElementById("modalImg").src = imagem;
-  document.getElementById("total").innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
-
-  // mostrar modal
+  document.getElementById("produtoNome").innerText = `${produtoAtualNome} — R$ ${precoAtual.toFixed(2)}`;
+  document.getElementById("modalImg").src = card.dataset.imagem;
+  document.getElementById("total").innerHTML = `Total: <b>R$ ${totalFinal.toFixed(2)}</b>`;
   document.getElementById("modal").style.display = "flex";
   document.getElementById("modal").setAttribute("aria-hidden","false");
-
   gerarVisualizacoes();
-
 }
 
-/* ========== ATUALIZAR TOTAL (cupom) ========== */
-async function atualizarTotal(){
-  const cupom = String(document.getElementById("cupom").value || "").trim().toUpperCase();
-  const campoDesconto = document.getElementById("desconto");
-  const campoTotal = document.getElementById("total");
-
-  // exibe total base enquanto valida
-  campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
-  totalFinal = precoAtual;
-
-  if(!cupom){
-    campoDesconto.innerText = "";
-    return;
-  }
-
-  campoDesconto.innerText = "Validando cupom... ⏳";
-  try{
-    // construir URL corretamente (CUPOM_API_URL não deve conter ?cupom=)
-    const url = `${CUPOM_API_URL}?cupom=${encodeURIComponent(cupom)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log("Retorno cupom API:", data);
-
-    // espera-se { valido: true/false, desconto: <percentual>, mensagem: "..." }
-    if(data && (data.valido === true || data.status === "valido")){
-      // suporta ambos formatos: porcentagem em data.desconto ou data.valor dependendo do script
-      const percentual = Number(data.desconto ?? data.valor ?? 0);
-      const descontoValor = precoAtual * (percentual / 100);
-      totalFinal = precoAtual - descontoValor;
-
-      campoDesconto.innerText = ` ${data.mensagem || "Cupom aplicado!"}`;
-      campoTotal.innerHTML = `Total: <b>R$ ${totalFinal.toFixed(2)}</b>`;
-    } else {
-      campoDesconto.innerText = `❌ ${data.mensagem || "Cupom inválido"}`;
-      campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
-      totalFinal = precoAtual;
-    }
-  }catch(err){
-    console.error("Erro ao validar cupom:", err);
-    campoDesconto.innerText = "Erro ao validar cupom ❌";
-    campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
-    totalFinal = precoAtual;
-  }
-}
-
-/* ========== GERAR VISUALIZAÇÕES ========== */
-function gerarVisualizacoes(){
-  const pessoas = Math.floor(Math.random()*11)+5;
-  document.getElementById("viewers").innerText = `${pessoas} pessoas visualizaram esse produto agora 🔥`;
-}
-
-/* ========== FECHAR MODAL ========== */
+/* ===== FECHAR MODAL ===== */
 function fecharModal(){
   document.getElementById("modal").style.display = "none";
   document.getElementById("modal").setAttribute("aria-hidden","true");
 }
 
-/* ========== ENVIAR PARA WHATSAPP ========== */
+/* ===== GERAR VISUALIZAÇÕES ===== */
+function gerarVisualizacoes(){
+  const pessoas = Math.floor(Math.random()*11)+5;
+  document.getElementById("viewers").innerText = `${pessoas} pessoas visualizaram esse produto agora 🔥`;
+}
+
+/* ===== ENVIAR PEDIDO ===== */
 function enviarPedido(){
   const nomeCliente = document.getElementById("nome").value.trim();
   const cidade = document.getElementById("cidade").value.trim();
-
-  if(!nomeCliente){
-    alert("Digite seu nome.");
-    return;
-  }
+  if(!nomeCliente){ alert("Digite seu nome."); return; }
 
   const afiliado = localStorage.getItem("afiliado") || "SEM_AFILIADO";
-  const totalTexto = totalFinal.toFixed(2);
 
-  const msg = `🛒 *Pedido*
-
-Produto: ${produtoAtualNome}
-Valor: R$ ${totalTexto}
-
-👤 Nome: ${nomeCliente}
-🏙️ Cidade: ${cidade}`;
-
-  /* REGISTRO NO GOOGLE SCRIPT */
-  fetch("https://script.google.com/macros/s/AKfycbxFP5o5as58xAajbT2McLckEBxYHlv3-pZFFGb3HQTJcieOln2o1bhl0genO8ywgq_A/exec" +
+  // Envia para Apps Script
+  fetch("https://script.google.com/macros/s/SEU_SCRIPT_ID/exec" +
     `?afiliado=${afiliado}` +
     `&produto=${encodeURIComponent(produtoAtualNome)}` +
-    `&valor=${totalTexto}` +
+    `&valor=${totalFinal}` +
     `&cliente=${encodeURIComponent(nomeCliente)}` +
     `&cidade=${encodeURIComponent(cidade)}`
-  );
+  )
+  .then(res => console.log("Pedido enviado:", res))
+  .catch(err => console.error("Erro ao enviar pedido:", err));
 
-  window.location.href =
-    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+  // Abrir WhatsApp
+  const msg = `🛒 *Pedido*\nProduto: ${produtoAtualNome}\nValor: R$ ${totalFinal.toFixed(2)}\n👤 Nome: ${nomeCliente}\n🏙️ Cidade: ${cidade}`;
+  window.location.href = `https://wa.me/${TELEFONE}?text=${encodeURIComponent(msg)}`;
 }
 
-
-/* ========== FILTRO E PAGINAÇÃO ========== */
+/* ===== FILTRO E PAGINAÇÃO ===== */
 const btnPrev = document.getElementById("prev");
 const btnNext = document.getElementById("next");
 const infoPagina = document.getElementById("page-info");
@@ -377,82 +278,33 @@ const filtroContainer = document.getElementById("filtroContainer");
 
 filtroContainer.querySelectorAll("button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    const cat = btn.getAttribute("data-cat");
+    categoriaAtual = btn.getAttribute("data-cat") || "todos";
     filtroContainer.querySelectorAll("button").forEach(b=>b.classList.remove("ativo"));
     btn.classList.add("ativo");
-    categoriaAtual = (cat||"todos").toLowerCase();
     paginaAtual = 1;
-    iniciarSistemaCatalogo();
+    mostrarProdutos();
   });
 });
 
-function iniciarSistemaCatalogo(){
-  mostrarProdutos();
-}
+function iniciarSistemaCatalogo(){ mostrarProdutos(); }
 
-/* mostrarProdutos com checagens e normalização */
 function mostrarProdutos(){
   const todosProdutos = Array.from(document.querySelectorAll(".produto"));
-  const filtrados = todosProdutos.filter(prod => {
-    const cat = String(prod.getAttribute("data-categoria") || "").toLowerCase();
-    return categoriaAtual === "todos" || cat === categoriaAtual;
-  });
-
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / produtosPorPagina));
-
-  todosProdutos.forEach(p => {
-    p.style.display = "none";
-    p.classList.remove("visivel");
-  });
-
-  if(filtrados.length === 0){
-    infoPagina.innerText = "Nenhum produto encontrado";
-    btnPrev.disabled = true;
-    btnNext.disabled = true;
-    return;
-  }
-
-  // garantir paginaAtual dentro dos limites
-  if(paginaAtual < 1) paginaAtual = 1;
-  if(paginaAtual > totalPaginas) paginaAtual = totalPaginas;
-
-  const inicio = (paginaAtual - 1) * produtosPorPagina;
-  const slice = filtrados.slice(inicio, inicio + produtosPorPagina);
-
-  slice.forEach((p, i) => {
-    p.style.display = "block";
-    setTimeout(()=>p.classList.add("visivel"), 40 * i);
-  });
-
+  const filtrados = todosProdutos.filter(prod => categoriaAtual==="todos" || prod.dataset.categoria === categoriaAtual);
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length/produtosPorPagina));
+  todosProdutos.forEach(p=>{ p.style.display="none"; p.classList.remove("visivel"); });
+  if(filtrados.length===0){ infoPagina.innerText="Nenhum produto encontrado"; btnPrev.disabled=true; btnNext.disabled=true; return; }
+  if(paginaAtual<1) paginaAtual=1; if(paginaAtual>totalPaginas) paginaAtual=totalPaginas;
+  const slice = filtrados.slice((paginaAtual-1)*produtosPorPagina, paginaAtual*produtosPorPagina);
+  slice.forEach((p,i)=>{ p.style.display="block"; setTimeout(()=>p.classList.add("visivel"),40*i); });
   infoPagina.innerText = `Página ${paginaAtual} de ${totalPaginas}`;
-  btnPrev.disabled = paginaAtual === 1;
-  btnNext.disabled = paginaAtual >= totalPaginas;
+  btnPrev.disabled = paginaAtual===1;
+  btnNext.disabled = paginaAtual>=totalPaginas;
 }
 
-/* PAGINAÇÃO com limites */
-btnPrev.addEventListener("click", ()=>{
-  if(paginaAtual > 1){
-    paginaAtual--;
-    mostrarProdutos();
-    window.scrollTo({ top: 200, behavior: "smooth" });
-  }
-});
-btnNext.addEventListener("click", ()=>{
-  // não ultrapassar o limite (mostrarProdutos atualiza totalPaginas)
-  const todosProdutos = Array.from(document.querySelectorAll(".produto"));
-  const filtrados = todosProdutos.filter(prod => {
-    const cat = String(prod.getAttribute("data-categoria") || "").toLowerCase();
-    return categoriaAtual === "todos" || cat === categoriaAtual;
-  });
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / produtosPorPagina));
-  if(paginaAtual < totalPaginas){
-    paginaAtual++;
-    mostrarProdutos();
-    window.scrollTo({ top: 200, behavior: "smooth" });
-  }
-});
+btnPrev.addEventListener("click", ()=>{ if(paginaAtual>1){ paginaAtual--; mostrarProdutos(); window.scrollTo({top:200,behavior:"smooth"}); } });
+btnNext.addEventListener("click", ()=>{ const totalPaginas = Math.max(1, Math.ceil(Array.from(document.querySelectorAll(".produto")).filter(prod=>categoriaAtual==="todos"||prod.dataset.categoria===categoriaAtual).length/produtosPorPagina)); if(paginaAtual<totalPaginas){ paginaAtual++; mostrarProdutos(); window.scrollTo({top:200,behavior:"smooth"}); } });
 
-/* ========== START ========== */
 document.addEventListener("DOMContentLoaded", carregarProdutos);
 </script>
 
