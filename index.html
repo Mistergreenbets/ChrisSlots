@@ -165,12 +165,13 @@ footer a:hover { text-decoration:underline; }
 /* ===== CAPTURA AUTOMÁTICA DE AFILIADO ===== */
 (function(){
   const params = new URLSearchParams(window.location.search);
-  const ref = params.get("ref");
-  if(ref){
-    localStorage.setItem("afiliado", ref.toUpperCase());
+  const afiliado = params.get("afiliado"); // agora captura ?afiliado=xxxx
+  if(afiliado){
+    localStorage.setItem("afiliado", afiliado.trim().toUpperCase());
   }
 })();
 </script>
+
 
 <script>
 /* ========== CONFIG ========== */
