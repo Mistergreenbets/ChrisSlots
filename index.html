@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -165,9 +164,11 @@ footer a:hover { text-decoration:underline; }
 /* ===== CAPTURA AUTOMÁTICA DE AFILIADO ===== */
 (function(){
   const params = new URLSearchParams(window.location.search);
-  const afiliado = params.get("afiliado"); // agora captura ?afiliado=xxxx
-  if(afiliado){
-    localStorage.setItem("afiliado", afiliado.trim().toUpperCase());
+  const afi = params.get("afiliado"); // captura "afiliado" da URL
+  if(afi){
+    localStorage.setItem("afiliado", afi.toUpperCase());
+  } else {
+    localStorage.removeItem("afiliado"); // limpa afiliado antigo se não houver parâmetro
   }
 })();
 </script>
