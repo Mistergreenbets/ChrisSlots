@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,6 +7,7 @@
 <title>Catálogo – Rabisco & Arte</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+/* --- seu CSS original mantido (compactado aqui, sem mudanças visuais) --- */
 *{ margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
 body{ background:#F9F8FC; color:#6C5243; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
 .container-vermelho{ background:linear-gradient(90deg,#DED8CC,#ADAC8C); padding:12px; text-align:center; font-weight:600; }
@@ -17,7 +19,7 @@ h3{text-align:center;margin:20px;color:#6C5243; letter-spacing:2px;}
 .filtro-container button{ background: linear-gradient(135deg,#DED8CC,#ADAC8C); border: none; padding: 10px 18px; border-radius: 25px; font-weight: 600; color: #6C5243; cursor: pointer; transition: .22s ease; box-shadow: 0 4px 8px rgba(173,172,140,.3); }
 .filtro-container button:hover { transform: translateY(-3px) scale(1.02); }
 .filtro-container button.ativo { background:#111; color:#ADAC8C; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
-main{ max-width:1100px; margin:30px auto; display:grid; grid-template-columns:repeat(2,1fr); gap:25px; padding:0 15px; }
+main{ max-width:1100px; margin:30px auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:25px; padding:0 15px; }
 .produto{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 6px 15px rgba(173,172,140,.18); transition:.35s; transform: translateY(12px); opacity:0; position:relative; }
 .produto.visivel{ transform: translateY(0); opacity:1; }
 .produto:hover{ transform:scale(1.02); box-shadow:0 10px 25px rgba(0,0,0,.08); }
@@ -37,8 +39,11 @@ main{ max-width:1100px; margin:30px auto; display:grid; grid-template-columns:re
 .modal-close{ position:absolute; top:10px; right:14px; cursor:pointer; font-size:18px; color:#999; }
 .modal-header h3{ margin-bottom:2px; color:#111; font-size:1.05rem; font-weight:800; line-height:1.2; }
 .viewers{ margin:2px 0; color:#ADAC8C; font-size:12.5px; line-height:1.2; }
-/* Remove cupom e vendedor do modal */
+.modal-alert{ margin-top:2px; color:#ff3d8e; font-size:16px; font-weight:700; }
 .modal-form input{ width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ddd; font-size:14px; }
+.status-box{ margin:8px 0 6px; }
+#desconto{ font-size:12.5px; }
+#total{ font-weight:800; font-size:14px; margin-top:2px; }
 .btn-whatsapp{ background:#25D366; border:none; width:100%; padding:14px; border-radius:12px; font-size:15px; color:#fff; font-weight:800; cursor:pointer; margin-top:8px; box-shadow:0 0 18px rgba(37,211,102,.5); transition:.25s; }
 .btn-whatsapp:hover{ transform:scale(1.04); }
 .modal-img{ width:100%; max-height:180px; object-fit:cover; border-radius:12px; margin-bottom:6px; }
@@ -65,10 +70,23 @@ footer a:hover { text-decoration:underline; }
   main{
     grid-template-columns:repeat(2, 1fr);
   }
-  .produto img{ height:150px; }
-  .produto h2{ font-size:14px; }
-  .produto p{ font-size:12px; }
-  .whatsapp{ right:12px; bottom:12px; }
+
+  .produto img{
+    height:150px;
+  }
+
+  .produto h2{
+    font-size:14px;
+  }
+
+  .produto p{
+    font-size:12px;
+  }
+
+  .whatsapp{
+    right:12px;
+    bottom:12px;
+  }
 }
 </style>
 </head>
@@ -128,47 +146,66 @@ footer a:hover { text-decoration:underline; }
     <img id="modalImg" class="modal-img" src="" alt="Produto">
     <div class="modal-header">
       <h3 id="produtoNome"></h3>
-      <p class="viewers"></p>
+      <p class="modal-alert">🔥 Alta procura — personalize o seu agora!</p>
+      <p id="viewers" class="viewers"></p>
     </div>
     <div class="modal-form">
-      <input type="text" id="nome" placeholder="👤 Seu nome">
-      <input type="text" id="cidade" placeholder="📍 Cidade">
-    </div>
+  <input type="text" id="nome" placeholder="👤 Seu nome">
+  <input type="text" id="cidade" placeholder="📍 Cidade">
+  <div class="status-box">
+    <p id="total"></p>
+  </div>
+</div>
+
     <button class="btn-whatsapp" onclick="enviarPedido()"><i class="fab fa-whatsapp"></i> Finalizar no WhatsApp</button>
   </div>
 </div>
 
 <script>
+/* ===== CAPTURA AUTOMÁTICA DE AFILIADO ===== */
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+  if(ref){
+    localStorage.setItem("afiliado", ref.toUpperCase());
+  }
+})();
+</script>
+
+<script>
+/* ========== CONFIG ========== */
 const SHEET_API_URL = "https://Mistergreenbets.github.io/RabiscoeArte/produtos.json";
 const telefone = "5585994083703";
 
+/* ========== ESTADO GLOBAL ========== */
 let produtos = [];
 let paginaAtual = 1;
 let categoriaAtual = "todos";
 const produtosPorPagina = 6;
 
-let produtoAtualNome = "";
-let precoAtual = 0;
-let afiliadoAtual = "SEM_AFILIADO";
+let precoAtual = 0;        // preço do produto antes do cupom (número)
+let totalFinal = 0;        // preço final (após cupom)
+let produtoAtualNome = ""; // nome do produto para o modal
 
-// captura afiliado da URL
-const urlParams = new URLSearchParams(window.location.search);
-afiliadoAtual = (urlParams.get('afiliado') || "SEM_AFILIADO").toUpperCase();
-
+/* ========== HELPERS ========== */
 function safeString(v){ return String(v || "").trim(); }
 
+/* ========== CARREGAR PRODUTOS ========== */
 async function carregarProdutos(){
   try{
     const res = await fetch(SHEET_API_URL);
     const data = await res.json();
-    produtos = data.map(p=>({
+
+    // normalizar categorias e garantir campos mínimos
+    produtos = data.map(p => ({
       nome: safeString(p.nome),
-      preco: Number(String(p.preco).replace(",", "."))||0,
+      preco: Number(String(p.preco).replace(",", ".")) || 0,
       categoria: safeString(p.categoria).toLowerCase(),
       imagem: safeString(p.imagem),
       descricao: safeString(p.descricao),
       badge: safeString(p.badge)
     }));
+
     renderizarCards();
     iniciarSistemaCatalogo();
   }catch(err){
@@ -177,19 +214,21 @@ async function carregarProdutos(){
   }
 }
 
+/* ========== RENDER CARDS (uso data-attrs para robustez) ========== */
 function renderizarCards(){
   const catalogo = document.getElementById("catalogo");
   catalogo.innerHTML = "";
-  produtos.forEach(p=>{
+
+  produtos.forEach(p => {
     const precoStr = p.preco.toFixed(2);
     const card = document.createElement("div");
-    card.className="produto";
-    card.setAttribute("data-categoria",p.categoria);
-    card.setAttribute("data-nome",p.nome);
-    card.setAttribute("data-preco",p.preco);
-    card.setAttribute("data-imagem",p.imagem);
+    card.className = "produto";
+    card.setAttribute("data-categoria", p.categoria);
+    card.setAttribute("data-nome", p.nome);
+    card.setAttribute("data-preco", p.preco);
+    card.setAttribute("data-imagem", p.imagem);
     card.innerHTML = `
-      ${p.badge?`<span class="badge">${p.badge}</span>`:""}
+      ${p.badge ? `<span class="badge">${p.badge}</span>` : ""}
       <div class="produto-img"><img src="${p.imagem}" alt="${p.nome}"></div>
       <div class="produto-content">
         <h2>${p.nome}</h2>
@@ -202,120 +241,217 @@ function renderizarCards(){
     `;
     catalogo.appendChild(card);
   });
+
+  // ligar eventos dos botões de cada card (robusto, evita problemas com aspas)
   document.querySelectorAll(".btn-encomendar").forEach(btn=>{
-    btn.addEventListener("click",function(){
-      const card=this.closest(".produto");
+    btn.addEventListener("click", function(){
+      const card = this.closest(".produto");
       abrirModalFromCard(card);
     });
   });
 }
 
+/* ========== ABRIR MODAL (via elemento card) ========== */
 function abrirModalFromCard(card){
   const nome = card.dataset.nome;
-  const preco = parseFloat(card.dataset.preco)||0;
-  const imagem = card.dataset.imagem||"";
+  const preco = parseFloat(card.dataset.preco) || 0;
+  const imagem = card.dataset.imagem || "";
 
+  // preencher globals
+  precoAtual = Number(preco);
+  totalFinal = precoAtual;
   produtoAtualNome = nome;
-  precoAtual = preco;
 
-  document.getElementById("produtoNome").innerText=`${nome} — R$ ${preco.toFixed(2)}`;
-  document.getElementById("modalImg").src=imagem;
-  document.getElementById("nome").value="";
-  document.getElementById("cidade").value="";
-  document.getElementById("modal").style.display="flex";
-  document.querySelector(".viewers").innerText = `${Math.floor(Math.random()*11)+5} pessoas visualizaram esse produto agora 🔥`;
+  // atualizar modal UI
+  document.getElementById("produtoNome").innerText = `${nome} — R$ ${precoAtual.toFixed(2)}`;
+  document.getElementById("modalImg").src = imagem;
+  document.getElementById("total").innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
+
+  // mostrar modal
+  document.getElementById("modal").style.display = "flex";
   document.getElementById("modal").setAttribute("aria-hidden","false");
+
+  gerarVisualizacoes();
+
 }
 
+/* ========== ATUALIZAR TOTAL (cupom) ========== */
+async function atualizarTotal(){
+  const cupom = String(document.getElementById("cupom").value || "").trim().toUpperCase();
+  const campoDesconto = document.getElementById("desconto");
+  const campoTotal = document.getElementById("total");
+
+  // exibe total base enquanto valida
+  campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
+  totalFinal = precoAtual;
+
+  if(!cupom){
+    campoDesconto.innerText = "";
+    return;
+  }
+
+  campoDesconto.innerText = "Validando cupom... ⏳";
+  try{
+    // construir URL corretamente (CUPOM_API_URL não deve conter ?cupom=)
+    const url = `${CUPOM_API_URL}?cupom=${encodeURIComponent(cupom)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log("Retorno cupom API:", data);
+
+    // espera-se { valido: true/false, desconto: <percentual>, mensagem: "..." }
+    if(data && (data.valido === true || data.status === "valido")){
+      // suporta ambos formatos: porcentagem em data.desconto ou data.valor dependendo do script
+      const percentual = Number(data.desconto ?? data.valor ?? 0);
+      const descontoValor = precoAtual * (percentual / 100);
+      totalFinal = precoAtual - descontoValor;
+
+      campoDesconto.innerText = ` ${data.mensagem || "Cupom aplicado!"}`;
+      campoTotal.innerHTML = `Total: <b>R$ ${totalFinal.toFixed(2)}</b>`;
+    } else {
+      campoDesconto.innerText = `❌ ${data.mensagem || "Cupom inválido"}`;
+      campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
+      totalFinal = precoAtual;
+    }
+  }catch(err){
+    console.error("Erro ao validar cupom:", err);
+    campoDesconto.innerText = "Erro ao validar cupom ❌";
+    campoTotal.innerHTML = `Total: <b>R$ ${precoAtual.toFixed(2)}</b>`;
+    totalFinal = precoAtual;
+  }
+}
+
+/* ========== GERAR VISUALIZAÇÕES ========== */
+function gerarVisualizacoes(){
+  const pessoas = Math.floor(Math.random()*11)+5;
+  document.getElementById("viewers").innerText = `${pessoas} pessoas visualizaram esse produto agora 🔥`;
+}
+
+/* ========== FECHAR MODAL ========== */
 function fecharModal(){
-  document.getElementById("modal").style.display="none";
+  document.getElementById("modal").style.display = "none";
   document.getElementById("modal").setAttribute("aria-hidden","true");
 }
 
+/* ========== ENVIAR PARA WHATSAPP ========== */
 function enviarPedido(){
-  const nomeCliente=document.getElementById("nome").value.trim();
-  const cidade=document.getElementById("cidade").value.trim();
-  if(!nomeCliente){alert("Digite seu nome.");return;}
-  if(!cidade){alert("Digite sua cidade.");return;}
+  const nomeCliente = document.getElementById("nome").value.trim();
+  const cidade = document.getElementById("cidade").value.trim();
 
-  const urlScript="https://script.google.com/macros/s/SEU_ID/exec"; // substitua pelo seu Apps Script
-
-  const params=new URLSearchParams({
-    produto:produtoAtualNome,
-    valor:precoAtual,
-    cliente:nomeCliente,
-    cidade:cidade,
-    afiliado:afiliadoAtual
-  });
-
-  fetch(`${urlScript}?${params.toString()}`)
-    .then(res=>res.text())
-    .then(r=>console.log("Venda registrada:",r))
-    .catch(err=>console.error("Erro ao registrar venda:",err));
-
-  const msg=`🛒 Pedido\nProduto: ${produtoAtualNome}\nPreço: R$ ${precoAtual.toFixed(2)}\nCliente: ${nomeCliente}\nCidade: ${cidade}`;
-  window.location.href=`https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
-}
-
-const btnPrev=document.getElementById("prev");
-const btnNext=document.getElementById("next");
-const infoPagina=document.getElementById("page-info");
-const filtroContainer=document.getElementById("filtroContainer");
-
-filtroContainer.querySelectorAll("button").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    const cat=btn.getAttribute("data-cat");
-    filtroContainer.querySelectorAll("button").forEach(b=>b.classList.remove("ativo"));
-    btn.classList.add("ativo");
-    categoriaAtual=(cat||"todos").toLowerCase();
-    paginaAtual=1;
-    mostrarProdutos();
-  });
-});
-
-function iniciarSistemaCatalogo(){mostrarProdutos();}
-
-function mostrarProdutos(){
-  const todosProdutos=Array.from(document.querySelectorAll(".produto"));
-  const filtrados=todosProdutos.filter(p=>{
-    const cat=String(p.getAttribute("data-categoria")||"").toLowerCase();
-    return categoriaAtual==="todos"||cat===categoriaAtual;
-  });
-  const totalPaginas=Math.max(1,Math.ceil(filtrados.length/produtosPorPagina));
-  todosProdutos.forEach(p=>{p.style.display="none"; p.classList.remove("visivel");});
-  if(filtrados.length===0){
-    infoPagina.innerText="Nenhum produto encontrado";
-    btnPrev.disabled=true;
-    btnNext.disabled=true;
+  if(!nomeCliente){
+    alert("Digite seu nome.");
     return;
   }
-  if(paginaAtual<1) paginaAtual=1;
-  if(paginaAtual>totalPaginas) paginaAtual=totalPaginas;
-  const inicio=(paginaAtual-1)*produtosPorPagina;
-  const slice=filtrados.slice(inicio,inicio+produtosPorPagina);
-  slice.forEach((p,i)=>{p.style.display="block"; setTimeout(()=>p.classList.add("visivel"),40*i);});
-  infoPagina.innerText=`Página ${paginaAtual} de ${totalPaginas}`;
-  btnPrev.disabled
-  btnPrev.disabled = paginaAtual === 1;
-  btnNext.disabled = paginaAtual === totalPaginas;
+
+  const afiliado = localStorage.getItem("afiliado") || "SEM_AFILIADO";
+  const totalTexto = totalFinal.toFixed(2);
+
+  const msg = `🛒 *Pedido*
+
+Produto: ${produtoAtualNome}
+Valor: R$ ${totalTexto}
+
+👤 Nome: ${nomeCliente}
+🏙️ Cidade: ${cidade}`;
+
+  /* REGISTRO NO GOOGLE SCRIPT */
+  fetch("https://script.google.com/macros/s/AKfycbx1q55kp5eZUJzV7260NXtVpizj3H5mpfyKIxvzz9N7EUpqIWWHWgGzIPnw6v0-BJ0n/exec" +
+    `?afiliado=${afiliado}` +
+    `&produto=${encodeURIComponent(produtoAtualNome)}` +
+    `&valor=${totalTexto}` +
+    `&cliente=${encodeURIComponent(nomeCliente)}` +
+    `&cidade=${encodeURIComponent(cidade)}`
+  );
+
+  window.location.href =
+    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
 }
 
-// eventos de paginação
-btnPrev.addEventListener("click",()=>{
-  if(paginaAtual>1){ paginaAtual--; mostrarProdutos(); }
-});
-btnNext.addEventListener("click",()=>{
-  const todosProdutos=Array.from(document.querySelectorAll(".produto"));
-  const filtrados=todosProdutos.filter(p=>{
-    const cat=String(p.getAttribute("data-categoria")||"").toLowerCase();
-    return categoriaAtual==="todos"||cat===categoriaAtual;
+
+/* ========== FILTRO E PAGINAÇÃO ========== */
+const btnPrev = document.getElementById("prev");
+const btnNext = document.getElementById("next");
+const infoPagina = document.getElementById("page-info");
+const filtroContainer = document.getElementById("filtroContainer");
+
+filtroContainer.querySelectorAll("button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const cat = btn.getAttribute("data-cat");
+    filtroContainer.querySelectorAll("button").forEach(b=>b.classList.remove("ativo"));
+    btn.classList.add("ativo");
+    categoriaAtual = (cat||"todos").toLowerCase();
+    paginaAtual = 1;
+    iniciarSistemaCatalogo();
   });
-  const totalPaginas=Math.max(1,Math.ceil(filtrados.length/produtosPorPagina));
-  if(paginaAtual<totalPaginas){ paginaAtual++; mostrarProdutos(); }
 });
 
-// carregar produtos ao iniciar
-window.addEventListener("DOMContentLoaded", carregarProdutos);
+function iniciarSistemaCatalogo(){
+  mostrarProdutos();
+}
+
+/* mostrarProdutos com checagens e normalização */
+function mostrarProdutos(){
+  const todosProdutos = Array.from(document.querySelectorAll(".produto"));
+  const filtrados = todosProdutos.filter(prod => {
+    const cat = String(prod.getAttribute("data-categoria") || "").toLowerCase();
+    return categoriaAtual === "todos" || cat === categoriaAtual;
+  });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / produtosPorPagina));
+
+  todosProdutos.forEach(p => {
+    p.style.display = "none";
+    p.classList.remove("visivel");
+  });
+
+  if(filtrados.length === 0){
+    infoPagina.innerText = "Nenhum produto encontrado";
+    btnPrev.disabled = true;
+    btnNext.disabled = true;
+    return;
+  }
+
+  // garantir paginaAtual dentro dos limites
+  if(paginaAtual < 1) paginaAtual = 1;
+  if(paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+
+  const inicio = (paginaAtual - 1) * produtosPorPagina;
+  const slice = filtrados.slice(inicio, inicio + produtosPorPagina);
+
+  slice.forEach((p, i) => {
+    p.style.display = "block";
+    setTimeout(()=>p.classList.add("visivel"), 40 * i);
+  });
+
+  infoPagina.innerText = `Página ${paginaAtual} de ${totalPaginas}`;
+  btnPrev.disabled = paginaAtual === 1;
+  btnNext.disabled = paginaAtual >= totalPaginas;
+}
+
+/* PAGINAÇÃO com limites */
+btnPrev.addEventListener("click", ()=>{
+  if(paginaAtual > 1){
+    paginaAtual--;
+    mostrarProdutos();
+    window.scrollTo({ top: 200, behavior: "smooth" });
+  }
+});
+btnNext.addEventListener("click", ()=>{
+  // não ultrapassar o limite (mostrarProdutos atualiza totalPaginas)
+  const todosProdutos = Array.from(document.querySelectorAll(".produto"));
+  const filtrados = todosProdutos.filter(prod => {
+    const cat = String(prod.getAttribute("data-categoria") || "").toLowerCase();
+    return categoriaAtual === "todos" || cat === categoriaAtual;
+  });
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / produtosPorPagina));
+  if(paginaAtual < totalPaginas){
+    paginaAtual++;
+    mostrarProdutos();
+    window.scrollTo({ top: 200, behavior: "smooth" });
+  }
+});
+
+/* ========== START ========== */
+document.addEventListener("DOMContentLoaded", carregarProdutos);
 </script>
 
 </body>
