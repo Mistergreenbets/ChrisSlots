@@ -352,7 +352,7 @@ function enviarPedido() {
     cidade: cidade,
     afiliado: afiliadoAtual
   });
-
+  
   fetch(`${urlScript}?${params.toString()}`)
     .then(r => console.log("Venda registrada"))
     .catch(e => console.error("Erro ao registrar venda", e));
