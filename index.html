@@ -255,7 +255,7 @@ function enviarPedido(){
   const afiliado = localStorage.getItem("afiliado") || "SEM_AFILIADO";
 
   // Envia para Apps Script
-  fetch("https://script.google.com/macros/s/SEU_SCRIPT_ID/exec" +
+  fetch("https://script.google.com/macros/s/AKfycbxKbagok-VMWYT6owmXOVbj1bqSfVRL-eZLcsuUuLhnvYL3W-04Ykixq0GH9vbZ3buF/exec" +
     `?afiliado=${afiliado}` +
     `&produto=${encodeURIComponent(produtoAtualNome)}` +
     `&valor=${totalFinal}` +
