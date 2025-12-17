@@ -189,6 +189,12 @@ let produtoAtualNome = ""; // nome do produto para o modal
 /* ========== HELPERS ========== */
 function safeString(v){ return String(v || "").trim(); }
 
+// Capturar afiliado da URL
+const urlParams = new URLSearchParams(window.location.search);
+const afiliadoAtual = (urlParams.get('afiliado') || "SEM_AFILIADO").toUpperCase();
+console.log("Afiliado atual:", afiliadoAtual);
+
+
 /* ========== CARREGAR PRODUTOS ========== */
 async function carregarProdutos(){
   try{
@@ -332,38 +338,30 @@ function fecharModal(){
 }
 
 /* ========== ENVIAR PARA WHATSAPP ========== */
-function enviarPedido(){
+function enviarPedido() {
   const nomeCliente = document.getElementById("nome").value.trim();
   const cidade = document.getElementById("cidade").value.trim();
+  if(!nomeCliente){ alert("Digite seu nome."); return; }
 
-  if(!nomeCliente){
-    alert("Digite seu nome.");
-    return;
-  }
+  // Registrar venda invisível via Apps Script
+  const urlScript = "https://script.google.com/macros/s/AKfycbx1q55kp5eZUJzV7260NXtVpizj3H5mpfyKIxvzz9N7EUpqIWWHWgGzIPnw6v0-BJ0n/exec";
+  const params = new URLSearchParams({
+    produto: produtoAtualNome,
+    valor: precoAtual,
+    cliente: nomeCliente,
+    cidade: cidade,
+    afiliado: afiliadoAtual
+  });
 
-  const afiliado = localStorage.getItem("afiliado") || "SEM_AFILIADO";
-  const totalTexto = totalFinal.toFixed(2);
+  fetch(`${urlScript}?${params.toString()}`)
+    .then(r => console.log("Venda registrada"))
+    .catch(e => console.error("Erro ao registrar venda", e));
 
-  const msg = `🛒 *Pedido*
-
-Produto: ${produtoAtualNome}
-Valor: R$ ${totalTexto}
-
-👤 Nome: ${nomeCliente}
-🏙️ Cidade: ${cidade}`;
-
-  /* REGISTRO NO GOOGLE SCRIPT */
-  fetch("https://script.google.com/macros/s/AKfycbx1q55kp5eZUJzV7260NXtVpizj3H5mpfyKIxvzz9N7EUpqIWWHWgGzIPnw6v0-BJ0n/exec" +
-    `?afiliado=${afiliado}` +
-    `&produto=${encodeURIComponent(produtoAtualNome)}` +
-    `&valor=${totalTexto}` +
-    `&cliente=${encodeURIComponent(nomeCliente)}` +
-    `&cidade=${encodeURIComponent(cidade)}`
-  );
-
-  window.location.href =
-    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+  // Abrir WhatsApp
+  const msg = `🛒 Pedido\nProduto: ${produtoAtualNome}\nPreço: R$ ${precoAtual.toFixed(2)}\nCliente: ${nomeCliente}\nCidade: ${cidade}`;
+  window.location.href = `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
 }
+
 
 
 /* ========== FILTRO E PAGINAÇÃO ========== */
