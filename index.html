@@ -225,10 +225,10 @@ grid.innerHTML = "";
 
 data.produtos.forEach(p => {
 
-  if(!p.Nome) return; // evita erro de linha vazia
+  if(!p.Nome) return;
 
-  let preco = Number(p.Preco);
-  let promo = Number(p.Promocao);
+  let preco = parseFloat(String(p.Preco).replace(",", "."));
+  let promo = parseFloat(String(p.Promocao).replace(",", "."));
 
   let desconto = "";
 
