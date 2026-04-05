@@ -155,6 +155,53 @@ body{
   font-size:30px;
   color:white;
 }
+
+  .slider-container{
+  position:relative;
+  margin:15px;
+}
+
+.slider{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  scroll-behavior:smooth;
+}
+
+.slider::-webkit-scrollbar{
+  display:none;
+}
+
+.slide{
+  min-width:250px;
+  flex-shrink:0;
+  background:linear-gradient(135deg,#ff7043,#d32f2f);
+  border-radius:20px;
+  padding:20px;
+  color:white;
+  text-align:center;
+}
+
+.slide img{
+  width:120px;
+  margin-top:10px;
+}
+
+.nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  background:white;
+  border:none;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  cursor:pointer;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+
+.prev{ left:-10px; }
+.next{ right:-10px; }
 </style>
 </head>
 
@@ -174,7 +221,13 @@ body{
 
 <div class="titulo">🔥 DESTAQUES DA SEMANA 🔥</div>
 
-<div id="destaque" class="destaque"></div>
+<div class="slider-container">
+  <button class="nav prev">❮</button>
+
+  <div id="destaque" class="slider"></div>
+
+  <button class="nav next">❯</button>
+</div>
 
 <div class="titulo">Todas as Ofertas</div>
 
@@ -210,23 +263,24 @@ fetch(API)
 
   // 🔥 DESTAQUES (MULTI)
   const destaqueBox = document.getElementById("destaque");
-  destaqueBox.innerHTML = "";
+destaqueBox.innerHTML = "";
 
-  data.destaques.forEach(d => {
-    destaqueBox.innerHTML += `
-      <div style="margin-bottom:20px">
-        <h2>${d.Nome}</h2>
-        <p>${d.Descricao}</p>
+data.destaques.forEach(d => {
 
-        <div class="preco">R$ ${Number(d.Promocao).toFixed(2)}</div>
-        <div class="antigo">R$ ${Number(d.Preco).toFixed(2)}</div>
+  destaqueBox.innerHTML += `
+    <div class="slide">
+      <h3>${d.Nome}</h3>
+      <p>${d.Descricao}</p>
 
-        <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% OFF</p>
+      <div class="preco">R$ ${Number(d.Promocao).toFixed(2)}</div>
+      <div class="antigo">R$ ${Number(d.Preco).toFixed(2)}</div>
 
-        <img src="${d.Imagem}">
-      </div>
-    `;
-  });
+      <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% OFF</p>
+
+      <img src="${d.Imagem}">
+    </div>
+  `;
+});
 
   // 🛒 PRODUTOS
   const grid = document.getElementById("produtos");
@@ -268,6 +322,18 @@ fetch(API)
   console.error("Erro real:", err);
   document.body.innerHTML = "Erro ao carregar produtos 😢";
 });
+
+  const slider = document.getElementById("destaque");
+const next = document.querySelector(".next");
+const prev = document.querySelector(".prev");
+
+next.onclick = () => {
+  slider.scrollBy({ left: 260, behavior: "smooth" });
+};
+
+prev.onclick = () => {
+  slider.scrollBy({ left: -260, behavior: "smooth" });
+};
 </script>
 
 </body>
