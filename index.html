@@ -221,32 +221,38 @@ fetch(API)
   // 🛒 PRODUTOS
   const grid = document.getElementById("produtos");
 
-  data.produtos.forEach(p => {
-g
-    let desconto = "";
+grid.innerHTML = "";
 
-    if(p.Promocao){x
-      let calc = Math.round((1 - p.Promocao/p.Preco)*100);
-      desconto = `<div class="desconto">-${calc}%</div>`;
-    }
+data.produtos.forEach(p => {
 
-    grid.innerHTML += `
-      <div class="card">
-        ${desconto}
-        <img src="${p.Imagem}">
-        <div class="nome">e0
-        ${p.Nome}</div>
-        <p>${p.Descricao}</p>
+  if(!p.Nome) return; // evita erro de linha vazia
 
-        ${p.Promocao ? `
-          <div style="text-decoration:line-through">R$ ${p.Preco}</div>
-          <div class="preco-card">R$ ${p.Promocao}</div>
-        ` : `
-          <div class="preco-card">R$ ${p.Preco}</div>
-        `}
-      </div>
-    `;
-  });
+  let preco = Number(p.Preco);
+  let promo = Number(p.Promocao);
+
+  let desconto = "";
+
+  if(promo && promo > 0){
+    let calc = Math.round((1 - promo/preco)*100);
+    desconto = `<div class="desconto">-${calc}%</div>`;
+  }
+
+  grid.innerHTML += `
+    <div class="card">
+      ${desconto}
+      <img src="${p.Imagem}" loading="lazy">
+      <div class="nome">${p.Nome}</div>
+      <p>${p.Descricao || ""}</p>
+
+      ${promo ? `
+        <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+        <div class="preco-card">R$ ${promo.toFixed(2)}</div>
+      ` : `
+        <div class="preco-card">R$ ${preco.toFixed(2)}</div>
+      `}
+    </div>
+  `;
+});
 
 });
 </script>
