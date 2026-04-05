@@ -271,7 +271,7 @@ body{
 <div class="whatsapp">💬</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxD6ufrJCowSsBX7za-DVLMUFouHcKP6xXf2P0lJTFnzcpe38WC5aR3TZwlxq0Wb8gokg/exec";
+const API = "https://script.google.com/macros/s/AKfycbxGjO-LFE9LS1j9NcVE3gnxXFBFFAsyRqjsJOso2_hBegNgOlekoR69jhAPqeQsHEE0Dg/exec";
 
 fetch(API)
 .then(res => {
@@ -292,24 +292,27 @@ fetch(API)
   destaqueBox.innerHTML = "";
   dotsContainer.innerHTML = "";
 
-  if(data.destaques && data.destaques.length > 0){
+  let lista = data.destaques || [];
 
-    data.destaques.forEach((d, index) => {
+  if(lista.length > 0){
+
+    lista.forEach((d, index) => {
 
       let preco = Number(d.Preco) || 0;
       let promo = Number(d.Promocao) || 0;
+      let img = d.Imagem || "https://via.placeholder.com/120";
 
       destaqueBox.innerHTML += `
         <div class="slide">
-          <h3>${d.Nome}</h3>
-          <p>${d.Descricao}</p>
+          <h3>${d.Nome || "Produto"}</h3>
+          <p>${d.Descricao || ""}</p>
 
           <div class="preco">R$ ${promo.toFixed(2)}</div>
           <div class="antigo">R$ ${preco.toFixed(2)}</div>
 
           <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
 
-          <img src="${d.Imagem}">
+          <img src="${img}">
         </div>
       `;
 
@@ -335,51 +338,40 @@ fetch(API)
       dots[index].classList.add("active");
     }
 
-    // Clique nas bolinhas
+    // clique nas bolinhas
     dots.forEach((dot, i) => {
       dot.onclick = () => goToSlide(i);
     });
 
-    // =========================
-    // 🔄 AUTO PLAY INTELIGENTE
-    // =========================
-
+    // autoplay
     let autoplay;
 
-    function startAutoPlay(){
+    function start(){
       autoplay = setInterval(() => {
         current = (current + 1) % slides.length;
         goToSlide(current);
       }, 3000);
     }
 
-    function stopAutoPlay(){
+    function stop(){
       clearInterval(autoplay);
     }
 
-    startAutoPlay();
+    start();
 
-    // pausa ao interagir
-    destaqueBox.addEventListener("touchstart", stopAutoPlay);
-    destaqueBox.addEventListener("mouseover", stopAutoPlay);
+    destaqueBox.addEventListener("mouseover", stop);
+    destaqueBox.addEventListener("touchstart", stop);
 
-    // volta automático
-    destaqueBox.addEventListener("mouseleave", startAutoPlay);
-    destaqueBox.addEventListener("touchend", startAutoPlay);
+    destaqueBox.addEventListener("mouseleave", start);
+    destaqueBox.addEventListener("touchend", start);
 
-    // =========================
-    // 🔘 BOTÕES ← →
-    // =========================
-
-    const next = document.querySelector(".next");
-    const prev = document.querySelector(".prev");
-
-    next.onclick = () => {
+    // botões
+    document.querySelector(".next").onclick = () => {
       current = (current + 1) % slides.length;
       goToSlide(current);
     };
 
-    prev.onclick = () => {
+    document.querySelector(".prev").onclick = () => {
       current = (current - 1 + slides.length) % slides.length;
       goToSlide(current);
     };
@@ -399,10 +391,9 @@ fetch(API)
 
     data.produtos.forEach(p => {
 
-      if(!p.Nome) return;
-
       let preco = Number(p.Preco) || 0;
       let promo = Number(p.Promocao) || 0;
+      let img = p.Imagem || "https://via.placeholder.com/100";
 
       let desconto = "";
 
@@ -414,7 +405,7 @@ fetch(API)
       grid.innerHTML += `
         <div class="card">
           ${desconto}
-          <img src="${p.Imagem}" loading="lazy">
+          <img src="${img}" loading="lazy">
           <div class="nome">${p.Nome}</div>
           <p>${p.Descricao || ""}</p>
 
