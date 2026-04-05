@@ -156,7 +156,8 @@ body{
   color:white;
 }
 
-  .slider-container{
+  /* SLIDER DESTAQUES */
+.slider-container{
   position:relative;
   margin:15px;
 }
@@ -166,6 +167,7 @@ body{
   gap:10px;
   overflow-x:auto;
   scroll-behavior:smooth;
+  scroll-snap-type:x mandatory; /* 🔥 trava no slide */
 }
 
 .slider::-webkit-scrollbar{
@@ -175,6 +177,7 @@ body{
 .slide{
   min-width:250px;
   flex-shrink:0;
+  scroll-snap-align:center; /* 🔥 centraliza */
   background:linear-gradient(135deg,#ff7043,#d32f2f);
   border-radius:20px;
   padding:20px;
@@ -187,6 +190,7 @@ body{
   margin-top:10px;
 }
 
+/* BOTÕES */
 .nav{
   position:absolute;
   top:50%;
@@ -198,12 +202,14 @@ body{
   border-radius:50%;
   cursor:pointer;
   box-shadow:0 2px 5px rgba(0,0,0,.2);
+  z-index:10;
 }
 
 .prev{ left:-10px; }
 .next{ right:-10px; }
 
-  .dots{
+/* BOLINHAS */
+.dots{
   display:flex;
   justify-content:center;
   gap:6px;
@@ -274,159 +280,139 @@ body{
 const API = "https://script.google.com/macros/s/AKfycbxGjO-LFE9LS1j9NcVE3gnxXFBFFAsyRqjsJOso2_hBegNgOlekoR69jhAPqeQsHEE0Dg/exec";
 
 fetch(API)
-.then(res => {
-  if(!res.ok) throw new Error("Erro na API");
-  return res.json();
-})
+.then(res => res.json())
 .then(data => {
 
-  console.log("API OK:", data);
-
-  // =========================
-  // 🔥 DESTAQUES (SLIDER)
-  // =========================
+  console.log("API:", data);
 
   const destaqueBox = document.getElementById("destaque");
-  const dotsContainer = document.getElementById("dots");
+  const dotsBox = document.getElementById("dots");
 
   destaqueBox.innerHTML = "";
-  dotsContainer.innerHTML = "";
+  dotsBox.innerHTML = "";
 
-  let lista = data.destaques || [];
-
-  if(lista.length > 0){
-
-    lista.forEach((d, index) => {
-
-      let preco = Number(d.Preco) || 0;
-      let promo = Number(d.Promocao) || 0;
-      let img = d.Imagem || "https://via.placeholder.com/120";
-
-      destaqueBox.innerHTML += `
-        <div class="slide">
-          <h3>${d.Nome || "Produto"}</h3>
-          <p>${d.Descricao || ""}</p>
-
-          <div class="preco">R$ ${promo.toFixed(2)}</div>
-          <div class="antigo">R$ ${preco.toFixed(2)}</div>
-
-          <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
-
-          <img src="${img}">
-        </div>
-      `;
-
-      dotsContainer.innerHTML += `
-        <div class="dot ${index === 0 ? "active" : ""}"></div>
-      `;
-    });
-
-    const slides = document.querySelectorAll(".slide");
-    const dots = document.querySelectorAll(".dot");
-
-    let current = 0;
-
-    function goToSlide(index){
-      current = index;
-
-      destaqueBox.scrollTo({
-        left: slides[index].offsetLeft,
-        behavior: "smooth"
-      });
-
-      dots.forEach(d => d.classList.remove("active"));
-      dots[index].classList.add("active");
-    }
-
-    // clique nas bolinhas
-    dots.forEach((dot, i) => {
-      dot.onclick = () => goToSlide(i);
-    });
-
-    // autoplay
-    let autoplay;
-
-    function start(){
-      autoplay = setInterval(() => {
-        current = (current + 1) % slides.length;
-        goToSlide(current);
-      }, 3000);
-    }
-
-    function stop(){
-      clearInterval(autoplay);
-    }
-
-    start();
-
-    destaqueBox.addEventListener("mouseover", stop);
-    destaqueBox.addEventListener("touchstart", stop);
-
-    destaqueBox.addEventListener("mouseleave", start);
-    destaqueBox.addEventListener("touchend", start);
-
-    // botões
-    document.querySelector(".next").onclick = () => {
-      current = (current + 1) % slides.length;
-      goToSlide(current);
-    };
-
-    document.querySelector(".prev").onclick = () => {
-      current = (current - 1 + slides.length) % slides.length;
-      goToSlide(current);
-    };
-
-  } else {
-    destaqueBox.innerHTML = "<p>Sem destaques</p>";
+  // 🔥 GARANTE ARRAY
+  let lista = [];
+  if(data.destaques && Array.isArray(data.destaques)){
+    lista = data.destaques;
   }
 
-  // =========================
-  // 🛒 PRODUTOS (GRID)
-  // =========================
+  // 🚨 DEBUG
+  console.log("TOTAL DESTAQUES:", lista.length);
 
+  if(lista.length === 0){
+    destaqueBox.innerHTML = "<p>Sem destaques</p>";
+    return;
+  }
+
+  // =====================
+  // 🔥 CRIAR SLIDES
+  // =====================
+  lista.forEach((d, i) => {
+
+    const preco = Number(d.Preco) || 0;
+    const promo = Number(d.Promocao) || 0;
+    const img = d.Imagem || "https://via.placeholder.com/120";
+
+    destaqueBox.innerHTML += `
+      <div class="slide">
+        <h3>${d.Nome}</h3>
+        <p>${d.Descricao || ""}</p>
+
+        <div class="preco">R$ ${promo.toFixed(2)}</div>
+        <div class="antigo">R$ ${preco.toFixed(2)}</div>
+
+        <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
+
+        <img src="${img}">
+      </div>
+    `;
+
+    dotsBox.innerHTML += `<div class="dot ${i === 0 ? "active" : ""}"></div>`;
+  });
+
+  const slides = document.querySelectorAll(".slide");
+  const dots = document.querySelectorAll(".dot");
+
+  let index = 0;
+
+  function go(i){
+    index = i;
+
+    destaqueBox.scrollTo({
+      left: slides[i].offsetLeft,
+      behavior: "smooth"
+    });
+
+    dots.forEach(d => d.classList.remove("active"));
+    dots[i].classList.add("active");
+  }
+
+  // 🔘 bolinhas
+  dots.forEach((dot, i)=>{
+    dot.onclick = () => go(i);
+  });
+
+  // 🔄 autoplay
+  let auto = setInterval(()=>{
+    index = (index + 1) % slides.length;
+    go(index);
+  }, 3000);
+
+  // pausa ao interagir
+  destaqueBox.addEventListener("mouseover", () => clearInterval(auto));
+  destaqueBox.addEventListener("touchstart", () => clearInterval(auto));
+
+  // botões
+  document.querySelector(".next").onclick = () => {
+    index = (index + 1) % slides.length;
+    go(index);
+  };
+
+  document.querySelector(".prev").onclick = () => {
+    index = (index - 1 + slides.length) % slides.length;
+    go(index);
+  };
+
+  // =====================
+  // 🛒 GRID PRODUTOS
+  // =====================
   const grid = document.getElementById("produtos");
   grid.innerHTML = "";
 
-  if(data.produtos && data.produtos.length > 0){
+  data.produtos.forEach(p => {
 
-    data.produtos.forEach(p => {
+    const preco = Number(p.Preco) || 0;
+    const promo = Number(p.Promocao) || 0;
 
-      let preco = Number(p.Preco) || 0;
-      let promo = Number(p.Promocao) || 0;
-      let img = p.Imagem || "https://via.placeholder.com/100";
+    let desconto = "";
 
-      let desconto = "";
+    if(promo > 0 && preco > 0){
+      let calc = Math.round((1 - promo/preco)*100);
+      desconto = `<div class="desconto">-${calc}%</div>`;
+    }
 
-      if(promo > 0 && preco > 0){
-        let calc = Math.round((1 - promo/preco)*100);
-        desconto = `<div class="desconto">-${calc}%</div>`;
-      }
+    grid.innerHTML += `
+      <div class="card">
+        ${desconto}
+        <img src="${p.Imagem}">
+        <div class="nome">${p.Nome}</div>
+        <p>${p.Descricao || ""}</p>
 
-      grid.innerHTML += `
-        <div class="card">
-          ${desconto}
-          <img src="${img}" loading="lazy">
-          <div class="nome">${p.Nome}</div>
-          <p>${p.Descricao || ""}</p>
-
-          ${promo > 0 ? `
-            <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
-            <div class="preco-card">R$ ${promo.toFixed(2)}</div>
-          ` : `
-            <div class="preco-card">R$ ${preco.toFixed(2)}</div>
-          `}
-        </div>
-      `;
-    });
-
-  } else {
-    grid.innerHTML = "<p style='text-align:center'>Sem produtos</p>";
-  }
+        ${promo > 0 ? `
+          <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+          <div class="preco-card">R$ ${promo.toFixed(2)}</div>
+        ` : `
+          <div class="preco-card">R$ ${preco.toFixed(2)}</div>
+        `}
+      </div>
+    `;
+  });
 
 })
 .catch(err => {
-  console.error("Erro real:", err);
-  document.body.innerHTML = "Erro ao carregar produtos 😢";
+  console.error(err);
+  document.body.innerHTML = "Erro ao carregar 😢";
 });
 </script>
 
