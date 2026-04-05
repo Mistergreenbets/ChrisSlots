@@ -282,142 +282,161 @@ fetch(API)
 
   console.log("API OK:", data);
 
-  // 🔥 DESTAQUES (MULTI)
-  // 🔥 DESTAQUES
-const destaqueBox = document.getElementById("destaque");
-const dotsContainer = document.getElementById("dots");
+  // =========================
+  // 🔥 DESTAQUES (SLIDER)
+  // =========================
 
-destaqueBox.innerHTML = "";
-dotsContainer.innerHTML = "";
+  const destaqueBox = document.getElementById("destaque");
+  const dotsContainer = document.getElementById("dots");
 
-let slides = [];
+  destaqueBox.innerHTML = "";
+  dotsContainer.innerHTML = "";
 
-if(data.destaques && data.destaques.length > 0){
+  if(data.destaques && data.destaques.length > 0){
 
-  data.destaques.forEach((d, index) => {
+    data.destaques.forEach((d, index) => {
 
-    let preco = Number(d.Preco) || 0;
-    let promo = Number(d.Promocao) || 0;
+      let preco = Number(d.Preco) || 0;
+      let promo = Number(d.Promocao) || 0;
 
-    destaqueBox.innerHTML += `
-      <div class="slide">
-        <h3>${d.Nome}</h3>
-        <p>${d.Descricao}</p>
+      destaqueBox.innerHTML += `
+        <div class="slide">
+          <h3>${d.Nome}</h3>
+          <p>${d.Descricao}</p>
 
-        <div class="preco">R$ ${promo.toFixed(2)}</div>
-        <div class="antigo">R$ ${preco.toFixed(2)}</div>
+          <div class="preco">R$ ${promo.toFixed(2)}</div>
+          <div class="antigo">R$ ${preco.toFixed(2)}</div>
 
-        <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
+          <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
 
-        <img src="${d.Imagem}">
-      </div>
-    `;
+          <img src="${d.Imagem}">
+        </div>
+      `;
 
-    // 🔵 Criar bolinha
-    dotsContainer.innerHTML += `<div class="dot ${index === 0 ? "active" : ""}"></div>`;
-  });
-
-  slides = document.querySelectorAll(".slide");
-  const dots = document.querySelectorAll(".dot");
-
-  let current = 0;
-  let slider = destaqueBox;
-
-  function goToSlide(index){
-    current = index;
-
-    slider.scrollTo({
-      left: slides[index].offsetLeft,
-      behavior: "smooth"
+      dotsContainer.innerHTML += `
+        <div class="dot ${index === 0 ? "active" : ""}"></div>
+      `;
     });
 
-    dots.forEach(d => d.classList.remove("active"));
-    dots[index].classList.add("active");
+    const slides = document.querySelectorAll(".slide");
+    const dots = document.querySelectorAll(".dot");
+
+    let current = 0;
+
+    function goToSlide(index){
+      current = index;
+
+      destaqueBox.scrollTo({
+        left: slides[index].offsetLeft,
+        behavior: "smooth"
+      });
+
+      dots.forEach(d => d.classList.remove("active"));
+      dots[index].classList.add("active");
+    }
+
+    // Clique nas bolinhas
+    dots.forEach((dot, i) => {
+      dot.onclick = () => goToSlide(i);
+    });
+
+    // =========================
+    // 🔄 AUTO PLAY INTELIGENTE
+    // =========================
+
+    let autoplay;
+
+    function startAutoPlay(){
+      autoplay = setInterval(() => {
+        current = (current + 1) % slides.length;
+        goToSlide(current);
+      }, 3000);
+    }
+
+    function stopAutoPlay(){
+      clearInterval(autoplay);
+    }
+
+    startAutoPlay();
+
+    // pausa ao interagir
+    destaqueBox.addEventListener("touchstart", stopAutoPlay);
+    destaqueBox.addEventListener("mouseover", stopAutoPlay);
+
+    // volta automático
+    destaqueBox.addEventListener("mouseleave", startAutoPlay);
+    destaqueBox.addEventListener("touchend", startAutoPlay);
+
+    // =========================
+    // 🔘 BOTÕES ← →
+    // =========================
+
+    const next = document.querySelector(".next");
+    const prev = document.querySelector(".prev");
+
+    next.onclick = () => {
+      current = (current + 1) % slides.length;
+      goToSlide(current);
+    };
+
+    prev.onclick = () => {
+      current = (current - 1 + slides.length) % slides.length;
+      goToSlide(current);
+    };
+
+  } else {
+    destaqueBox.innerHTML = "<p>Sem destaques</p>";
   }
 
-  // 🔘 Clique nas bolinhas
-  dots.forEach((dot, i) => {
-    dot.onclick = () => goToSlide(i);
-  });
+  // =========================
+  // 🛒 PRODUTOS (GRID)
+  // =========================
 
-  // 🔄 AUTO PLAY
-  let autoplay = setInterval(() => {
-    current = (current + 1) % slides.length;
-    goToSlide(current);
-  }, 3000);
-
-  // ⛔ Pausar ao interagir
-  slider.addEventListener("touchstart", () => clearInterval(autoplay));
-  slider.addEventListener("mouseover", () => clearInterval(autoplay));
-
-  // 🔘 BOTÕES
-  const next = document.querySelector(".next");
-  const prev = document.querySelector(".prev");
-
-  next.onclick = () => {
-    current = (current + 1) % slides.length;
-    goToSlide(current);
-  };
-
-  prev.onclick = () => {
-    current = (current - 1 + slides.length) % slides.length;
-    goToSlide(current);
-  };
-
-}
-
-  // 🛒 PRODUTOS
   const grid = document.getElementById("produtos");
   grid.innerHTML = "";
 
-  data.produtos.forEach(p => {
+  if(data.produtos && data.produtos.length > 0){
 
-    if(!p.Nome) return;
+    data.produtos.forEach(p => {
 
-    let preco = Number(p.Preco);
-    let promo = Number(p.Promocao);
+      if(!p.Nome) return;
 
-    let desconto = "";
+      let preco = Number(p.Preco) || 0;
+      let promo = Number(p.Promocao) || 0;
 
-    if(promo && promo > 0){
-      let calc = Math.round((1 - promo/preco)*100);
-      desconto = `<div class="desconto">-${calc}%</div>`;
-    }
+      let desconto = "";
 
-    grid.innerHTML += `
-      <div class="card">
-        ${desconto}
-        <img src="${p.Imagem}" loading="lazy">
-        <div class="nome">${p.Nome}</div>
-        <p>${p.Descricao}</p>
+      if(promo > 0 && preco > 0){
+        let calc = Math.round((1 - promo/preco)*100);
+        desconto = `<div class="desconto">-${calc}%</div>`;
+      }
 
-        ${promo ? `
-          <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
-          <div class="preco-card">R$ ${promo.toFixed(2)}</div>
-        ` : `
-          <div class="preco-card">R$ ${preco.toFixed(2)}</div>
-        `}
-      </div>
-    `;
-  });
+      grid.innerHTML += `
+        <div class="card">
+          ${desconto}
+          <img src="${p.Imagem}" loading="lazy">
+          <div class="nome">${p.Nome}</div>
+          <p>${p.Descricao || ""}</p>
+
+          ${promo > 0 ? `
+            <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+            <div class="preco-card">R$ ${promo.toFixed(2)}</div>
+          ` : `
+            <div class="preco-card">R$ ${preco.toFixed(2)}</div>
+          `}
+        </div>
+      `;
+    });
+
+  } else {
+    grid.innerHTML = "<p style='text-align:center'>Sem produtos</p>";
+  }
 
 })
 .catch(err => {
   console.error("Erro real:", err);
   document.body.innerHTML = "Erro ao carregar produtos 😢";
 });
-
-  const slider = document.getElementById("destaque");
-const next = document.querySelector(".next");
-const prev = document.querySelector(".prev");
-
-next.onclick = () => {
-  slider.scrollBy({ left: 260, behavior: "smooth" });
-};
-
-prev.onclick = () => {
-  slider.scrollBy({ left: -260, behavior: "smooth" });
-};
 </script>
 
 </body>
