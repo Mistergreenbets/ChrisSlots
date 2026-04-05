@@ -157,37 +157,61 @@ body{
 }
 
   /* SLIDER DESTAQUES */
-.slider-container{
-  position:relative;
-  margin:15px;
-}
-
-.slider{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  scroll-behavior:smooth;
-  scroll-snap-type:x mandatory; /* 🔥 trava no slide */
-}
-
-.slider::-webkit-scrollbar{
-  display:none;
-}
-
 .slide{
-  min-width:250px;
+  min-width:85%; /* 🔥 ocupa quase toda tela no mobile */
+  max-width:320px;
   flex-shrink:0;
-  scroll-snap-align:center; /* 🔥 centraliza */
+  scroll-snap-align:center;
   background:linear-gradient(135deg,#ff7043,#d32f2f);
   border-radius:20px;
-  padding:20px;
+  padding:16px;
   color:white;
   text-align:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  transition: transform 0.3s ease;
 }
 
+.slide:hover{
+  transform:scale(1.03);
+}
+
+/* 📱 MOBILE AJUSTES */
+.slide h3{
+  font-size:18px;
+  margin:5px 0;
+}
+
+.slide p{
+  font-size:13px;
+  margin:4px 0;
+}
+
+/* 💰 PREÇO */
+.slide .preco{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.slide .antigo{
+  font-size:13px;
+  opacity:0.7;
+}
+
+/* 🖼 IMAGEM RESPONSIVA */
 .slide img{
-  width:120px;
-  margin-top:10px;
+  width:100%;
+  max-width:140px;
+  height:auto;
+  margin:10px auto 0;
+  object-fit:contain;
+}
+
+/* 🔥 DESCONTO */
+.slide .off{
+  font-size:13px;
+  margin-top:5px;
 }
 
 /* BOTÕES */
@@ -315,18 +339,18 @@ fetch(API)
     const img = d.Imagem || "https://via.placeholder.com/120";
 
     destaqueBox.innerHTML += `
-      <div class="slide">
-        <h3>${d.Nome}</h3>
-        <p>${d.Descricao || ""}</p>
+  <div class="slide">
+    <h3>${d.Nome}</h3>
+    <p>${d.Descricao || ""}</p>
 
-        <div class="preco">R$ ${promo.toFixed(2)}</div>
-        <div class="antigo">R$ ${preco.toFixed(2)}</div>
+    <div class="preco">R$ ${promo.toFixed(2)}</div>
+    <div class="antigo">R$ ${preco.toFixed(2)}</div>
 
-        <p>🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</p>
+    <div class="off">🔥 ${preco > 0 ? Math.round((1 - promo/preco)*100) : 0}% OFF</div>
 
-        <img src="${img}">
-      </div>
-    `;
+    <img src="${img}">
+  </div>
+`;
 
     dotsBox.innerHTML += `<div class="dot ${i === 0 ? "active" : ""}"></div>`;
   });
