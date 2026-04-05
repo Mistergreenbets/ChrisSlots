@@ -200,27 +200,35 @@ body{
 const API = "https://script.google.com/macros/s/AKfycbxD6ufrJCowSsBX7za-DVLMUFouHcKP6xXf2P0lJTFnzcpe38WC5aR3TZwlxq0Wb8gokg/exec";
 
 fetch(API)
-.then(res => res.json())
+.then(res => {
+  if(!res.ok) throw new Error("Erro na API");
+  return res.json();
+})
 .then(data => {
 
-  console.log(data); // debug
+  console.log("API OK:", data);
 
-  // 🔥 DESTAQUE (apenas 1)
-  const d = data.destaque;
+  // 🔥 DESTAQUES (MULTI)
+  const destaqueBox = document.getElementById("destaque");
+  destaqueBox.innerHTML = "";
 
-  document.getElementById("destaque").innerHTML = `
-    <h2>${d.Nome}</h2>
-    <p>${d.Descricao}</p>
+  data.destaques.forEach(d => {
+    destaqueBox.innerHTML += `
+      <div style="margin-bottom:20px">
+        <h2>${d.Nome}</h2>
+        <p>${d.Descricao}</p>
 
-    <div class="preco">R$ ${d.Promocao}</div>
-    <div class="antigo">R$ ${d.Preco}</div>
+        <div class="preco">R$ ${Number(d.Promocao).toFixed(2)}</div>
+        <div class="antigo">R$ ${Number(d.Preco).toFixed(2)}</div>
 
-    <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% OFF</p>
+        <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% OFF</p>
 
-    <img src="${d.Imagem}">
-  `;
+        <img src="${d.Imagem}">
+      </div>
+    `;
+  });
 
-  // 🛒 GRID (FUNCIONANDO)
+  // 🛒 PRODUTOS
   const grid = document.getElementById("produtos");
   grid.innerHTML = "";
 
@@ -228,8 +236,8 @@ fetch(API)
 
     if(!p.Nome) return;
 
-    let preco = p.Preco;
-    let promo = p.Promocao;
+    let preco = Number(p.Preco);
+    let promo = Number(p.Promocao);
 
     let desconto = "";
 
@@ -241,7 +249,7 @@ fetch(API)
     grid.innerHTML += `
       <div class="card">
         ${desconto}
-        <img src="${p.Imagem}">
+        <img src="${p.Imagem}" loading="lazy">
         <div class="nome">${p.Nome}</div>
         <p>${p.Descricao}</p>
 
@@ -257,7 +265,7 @@ fetch(API)
 
 })
 .catch(err => {
-  console.error(err);
+  console.error("Erro real:", err);
   document.body.innerHTML = "Erro ao carregar produtos 😢";
 });
 </script>
