@@ -197,63 +197,67 @@ body{
 <div class="whatsapp">💬</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxD6ufrJCowSsBX7za-DVLMUFouHcKP6xXf2P0lJTFnzcpe38WC5aR3TZwlxq0Wb8gokg/exec";
+const API = "SUA_API_AQUI";
 
 fetch(API)
 .then(r => r.json())
 .then(data => {
 
-  // 🔥 DESTAQUE
-  const d = data.destaque;
+  // 🔥 MULTI DESTAQUES
+  const destaqueBox = document.getElementById("destaque");
 
-  document.getElementById("destaque").innerHTML = `
-    <h2>${d.Nome}</h2>
-    <p>${d.Descricao}</p>
+  data.destaques.forEach(d => {
 
-    <div class="preco">R$ ${d.Promocao}</div>
-    <div class="antigo">R$ ${d.Preco}</div>
+    destaqueBox.innerHTML += `
+      <div style="margin-bottom:20px">
+        <h2>${d.Nome}</h2>
+        <p>${d.Descricao}</p>
 
-    <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% de desconto</p>
+        <div class="preco">R$ ${d.Promocao}</div>
+        <div class="antigo">R$ ${d.Preco}</div>
 
-    <img src="${d.Imagem}">
-  `;
+        <p>🔥 ${Math.round((1 - d.Promocao/d.Preco)*100)}% OFF</p>
+
+        <img src="${d.Imagem}">
+      </div>
+    `;
+  });
 
   // 🛒 PRODUTOS
   const grid = document.getElementById("produtos");
 
-grid.innerHTML = "";
+  grid.innerHTML = ""; // limpa antes
 
-data.produtos.forEach(p => {
+  data.produtos.forEach(p => {
 
-  if(!p.Nome) return;
+    let desconto = "";
 
-  let preco = parseFloat(String(p.Preco).replace(",", "."));
-  let promo = parseFloat(String(p.Promocao).replace(",", "."));
+    if(p.Promocao){
+      let calc = Math.round((1 - p.Promocao/p.Preco)*100);
+      desconto = `<div class="desconto">-${calc}%</div>`;
+    }
 
-  let desconto = "";
+    grid.innerHTML += `
+      <div class="card">
+        ${desconto}
+        <img src="${p.Imagem}">
+        <div class="nome">${p.Nome}</div>
+        <p>${p.Descricao}</p>
 
-  if(promo && promo > 0){
-    let calc = Math.round((1 - promo/preco)*100);
-    desconto = `<div class="desconto">-${calc}%</div>`;
-  }
+        ${p.Promocao ? `
+          <div style="text-decoration:line-through">R$ ${p.Preco}</div>
+          <div class="preco-card">R$ ${p.Promocao}</div>
+        ` : `
+          <div class="preco-card">R$ ${p.Preco}</div>
+        `}
+      </div>
+    `;
+  });
 
-  grid.innerHTML += `
-    <div class="card">
-      ${desconto}
-      <img src="${p.Imagem}" loading="lazy">
-      <div class="nome">${p.Nome}</div>
-      <p>${p.Descricao || ""}</p>
-
-      ${promo ? `
-        <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
-        <div class="preco-card">R$ ${promo.toFixed(2)}</div>
-      ` : `
-        <div class="preco-card">R$ ${preco.toFixed(2)}</div>
-      `}
-    </div>
-  `;
-});
-
+})
+.catch(err => {
+  console.log("Erro:", err);
+  document.body.innerHTML = "Erro ao carregar produtos";
 });
 </script>
 
