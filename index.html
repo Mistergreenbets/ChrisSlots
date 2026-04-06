@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Supermercado</title>
+<title>Meu App - Mercadinho</title>
 
 <style>
 body{
@@ -16,22 +16,30 @@ body{
 /* TOPO */
 .topo{
   height:200px;
-  background:url('https://images.unsplash.com/photo-1542838132-92c53300491e') center/cover;
+  background:url('https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1920,fit=crop/d95Z6K8vbvi74OZj/pngtree-supermarket-grocery-store-aisle-and-shelves-blurred-background-picture-image_15628118-EkpG4LQ04e7GZahV.jpg') center/cover;
 }
 
+/* LOGO REDONDA */
 .logo{
-  width:100px;
-  height:100px;
+  width:125px;
+  height:125px;
   border-radius:50%;
-  background:#e53935;
+  background:white;
   margin:-50px auto 10px;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
-  font-weight:bold;
-  font-size:20px;
+
   box-shadow:0 4px 10px rgba(0,0,0,.2);
+  overflow:hidden;
+}
+
+/* IMAGEM DA LOGO */
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 /* INFO */
@@ -100,6 +108,23 @@ body{
   text-align:center;
   box-shadow:0 2px 5px rgba(0,0,0,.1);
   position:relative;
+  overflow:hidden;
+  transition: transform 0.2s ease;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+  transition:0.5s;
+}
+
+.card.click::after{
+  left:100%;
 }
 
 .desconto{
@@ -190,6 +215,14 @@ body{
   margin-top:10px;
 }
 
+.slide{
+  transition: transform 0.3s ease;
+}
+
+.slide:hover{
+  transform:scale(1.03);
+}
+
 /* BOTÕES */
 .nav{
   position:absolute;
@@ -235,7 +268,9 @@ body{
 
 <div class="topo"></div>
 
-<div class="logo">LOGO</div>
+<div class="logo">
+  <img src="logo.webp">
+</div>
 
 <div class="info">
   <h1>SuperMercado Economia+</h1>
@@ -297,7 +332,6 @@ fetch(API)
     lista = data.destaques;
   }
 
-  // 🚨 DEBUG
   console.log("TOTAL DESTAQUES:", lista.length);
 
   if(lista.length === 0){
@@ -306,7 +340,7 @@ fetch(API)
   }
 
   // =====================
-  // 🔥 CRIAR SLIDES
+  // 🔥 SLIDES
   // =====================
   lista.forEach((d, i) => {
 
@@ -348,22 +382,18 @@ fetch(API)
     dots[i].classList.add("active");
   }
 
-  // 🔘 bolinhas
   dots.forEach((dot, i)=>{
     dot.onclick = () => go(i);
   });
 
-  // 🔄 autoplay
   let auto = setInterval(()=>{
     index = (index + 1) % slides.length;
     go(index);
   }, 3000);
 
-  // pausa ao interagir
   destaqueBox.addEventListener("mouseover", () => clearInterval(auto));
   destaqueBox.addEventListener("touchstart", () => clearInterval(auto));
 
-  // botões
   document.querySelector(".next").onclick = () => {
     index = (index + 1) % slides.length;
     go(index);
@@ -392,21 +422,34 @@ fetch(API)
       desconto = `<div class="desconto">-${calc}%</div>`;
     }
 
-    grid.innerHTML += `
-      <div class="card">
-        ${desconto}
-        <img src="${p.Imagem}">
-        <div class="nome">${p.Nome}</div>
-        <p>${p.Descricao || ""}</p>
+    // 🔥 CRIA CARD CORRETAMENTE
+    const card = document.createElement("div");
+    card.className = "card";
 
-        ${promo > 0 ? `
-          <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
-          <div class="preco-card">R$ ${promo.toFixed(2)}</div>
-        ` : `
-          <div class="preco-card">R$ ${preco.toFixed(2)}</div>
-        `}
-      </div>
+    card.innerHTML = `
+      ${desconto}
+      <img src="${p.Imagem}">
+      <div class="nome">${p.Nome}</div>
+      <p>${p.Descricao || ""}</p>
+
+      ${promo > 0 ? `
+        <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+        <div class="preco-card">R$ ${promo.toFixed(2)}</div>
+      ` : `
+        <div class="preco-card">R$ ${preco.toFixed(2)}</div>
+      `}
     `;
+
+    // ✅ ANIMAÇÃO AO CLICAR (AGORA FUNCIONA)
+    card.addEventListener("click", () => {
+      card.classList.add("click");
+
+      setTimeout(() => {
+        card.classList.remove("click");
+      }, 200);
+    });
+
+    grid.appendChild(card);
   });
 
 })
