@@ -249,7 +249,11 @@ body{
   gap:10px;
   overflow-x:auto;
   scroll-behavior:smooth;
-  scroll-snap-type:x mandatory; /* 🔥 trava no slide */
+  scroll-snap-type:x mandatory; /8* 🔥 trava no slide */
+  overflow-x:auto;
+  overflow-y:hidden;
+  touch-action: pan-x;
+  scroll-padding-left:15px;
 }
 
 .slider::-webkit-scrollbar{
@@ -259,7 +263,7 @@ body{
 .slide{
   min-width:250px;
   flex-shrink:0;
-  scroll-snap-align:center; /* 🔥 centraliza */
+  scroll-snap-align: start; /* 🔥 centraliza */
   background:linear-gradient(135deg,#ff7043,#d32f2f);
   border-radius:20px;
   padding:20px;
@@ -592,33 +596,39 @@ function montarTela(data){
     let index = 0;
 
     function go(i){
-      index = i;
+  index = i;
 
-      destaqueBox.scrollTo({
-        left: slides[i].offsetLeft,
-        behavior: "smooth"
-      });
+  const slideWidth = slides[i].offsetWidth + 10; // espaço entre slides
 
-      dots.forEach(d => d.classList.remove("active"));
-      dots[i].classList.add("active");
-    }
+  destaqueBox.scrollTo({
+    left: slideWidth * i,
+    behavior: "smooth"
+  });
 
-    dots.forEach((dot, i)=>{
-      dot.onclick = () => go(i);
-    });
+  dots.forEach(d => d.classList.remove("active"));
+  dots[i].classList.add("active");
+}
 
     // =====================
     // 🔄 AUTO PLAY
     // =====================
-    let auto;
+     let total = slides.length;
+     let auto;
 
     function startAuto(){
-      stopAuto();
-      auto = setInterval(() => {
-        index = (index + 1) % slides.length;
-        go(index);
-      }, 3000);
+  stopAuto();
+
+  auto = setInterval(() => {
+    index++;
+
+    if(index >= total){
+      index = 0;
     }
+
+    go(index);
+
+  }, 3000);
+}
 
     function stopAuto(){
       if(auto) clearInterval(auto);
