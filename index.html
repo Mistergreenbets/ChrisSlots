@@ -247,16 +247,9 @@ body{
 .slider{
   display:flex;
   gap:10px;
-
   overflow-x:auto;
-  overflow-y:hidden;
-
   scroll-behavior:smooth;
-  scroll-snap-type:none;
-
-  touch-action:pan-x;
-
-  padding-left:15px; /* já estava certo */
+  scroll-snap-type:x mandatory; /* 🔥 trava no slide */
 }
 
 .slider::-webkit-scrollbar{
@@ -266,6 +259,7 @@ body{
 .slide{
   min-width:250px;
   flex-shrink:0;
+  scroll-snap-align:center; /* 🔥 centraliza */
   background:linear-gradient(135deg,#ff7043,#d32f2f);
   border-radius:20px;
   padding:20px;
@@ -595,67 +589,48 @@ function montarTela(data){
 
     if(slides.length === 0) return;
 
-    let index = 1;
-let auto;
+    let index = 0;
 
-// 🔥 pega gap real do CSS
-function getGap(){
-  const style = getComputedStyle(destaqueBox);
-  return parseInt(style.gap) || 0;
-}
+    function go(i){
+      index = i;
 
-function go(i){
+      destaqueBox.scrollTo({
+        left: slides[i].offsetLeft,
+        behavior: "smooth"
+      });
 
-  const total = slides.length;
+      dots.forEach(d => d.classList.remove("active"));
+      dots[i].classList.add("active");
+    }
 
-  // 🔥 LOOP INFINITO
-  if(i >= total){
-    i = 0;
-  }
+    dots.forEach((dot, i)=>{
+      dot.onclick = () => go(i);
+    });
 
-  if(i < 0){
-    i = total - 1;
-  }
+    // =====================
+    // 🔄 AUTO PLAY
+    // =====================
+    let auto;
 
-  index = i;
+    function startAuto(){
+      stopAuto();
+      auto = setInterval(() => {
+        index = (index + 1) % slides.length;
+        go(index);
+      }, 3000);
+    }
 
-  const slideWidth = slides[0].clientWidth + getGap();
+    function stopAuto(){
+      if(auto) clearInterval(auto);
+    }
 
-  destaqueBox.scrollTo({
-    left: slideWidth * index,
-    behavior: "smooth"
-  });
-
-  dots.forEach(d => d.classList.remove("active"));
-  if(dots[index]) dots[index].classList.add("active");
-}
-
-// =====================
-// 🔄 AUTO PLAY
-// =====================
-
-function startAuto(){
-  stopAuto();
-
-  auto = setInterval(() => {
-    index++;
-    go(index);
-  }, 3000);
-}
-
-function stopAuto(){
-  if(auto){
-    clearInterval(auto);
-    auto = null;
-  }
-}
-
-// inicia correto
-go(0);
-startAuto();
+    startAuto();
 
     destaqueBox.addEventListener("touchstart", stopAuto);
     destaqueBox.addEventListener("mouseover", stopAuto);
+
+    destaqueBox.addEventListener("mouseleave", startAuto);
+    destaqueBox.addEventListener("touchend", startAuto);
 
     // BOTÕES
     const next = document.querySelector(".next");
