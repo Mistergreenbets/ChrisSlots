@@ -238,46 +238,40 @@ body{
   color:white;
 }
 
-  /* SLIDER DESTAQUES */
 .slider-container{
-  position:relative;
-  margin:15px;
+  position: relative;
+  margin: 15px;
+  overflow: hidden; /* 🔥 quem corta é o container */
 }
 
-.slider{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  scroll-behavior:smooth;
-  scroll-snap-type:x mandatory; /* 🔥 trava no slide */
+#destaque{
+  display: flex;
+  transition: transform 0.5s ease;
+  width: 100%;
 }
 
-.slider::-webkit-scrollbar{
-  display:none;
-}
-
+/* SLIDES */
 .slide{
-  min-width:250px;
-  flex-shrink:0;
-  scroll-snap-align:center; /* 🔥 centraliza */
-  background:linear-gradient(135deg,#ff7043,#d32f2f);
-  border-radius:20px;
-  padding:20px;
-  color:white;
-  text-align:center;
+  flex: 0 0 100%;
+  max-width: 100%;
+
+  background: linear-gradient(135deg,#ff7043,#d32f2f);
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  text-align: center;
+  transition: transform 0.3s ease;
 }
 
+/* IMAGEM */
 .slide img{
   width:120px;
   margin-top:10px;
 }
 
-.slide{
-  transition: transform 0.3s ease;
-}
-
+/* HOVER */
 .slide:hover{
-  transform:scale(1.03);
+  transform: scale(1.03);
 }
 
 /* BOTÕES */
@@ -428,7 +422,7 @@ body{
 <div class="slider-container">
   <button class="nav prev">❮</button>
 
-  <div id="destaque" class="slider"></div>
+  <div id="destaque"></div>
   <div class="dots" id="dots"></div>
 
   <button class="nav next">❯</button>
@@ -590,56 +584,68 @@ function montarTela(data){
     if(slides.length === 0) return;
 
     let index = 0;
+let auto;
 
-    function go(i){
-      index = i;
+function atualizarSlider(){
+  destaqueBox.style.transform = `translateX(-${index * 100}%)`;
 
-      destaqueBox.scrollTo({
-        left: slides[i].offsetLeft,
-        behavior: "smooth"
-      });
+  dots.forEach(d => d.classList.remove("active"));
+  dots[index].classList.add("active");
+}
 
-      dots.forEach(d => d.classList.remove("active"));
-      dots[i].classList.add("active");
+// =====================
+// 🔄 AUTO PLAY
+// =====================
+function startAuto(){
+  stopAuto();
+
+  auto = setInterval(() => {
+
+    index++;
+
+    if(index >= slides.length){
+      index = 0;
     }
 
-    dots.forEach((dot, i)=>{
-      dot.onclick = () => go(i);
-    });
+    atualizarSlider();
 
-    // =====================
-    // 🔄 AUTO PLAY
-    // =====================
-    let auto;
+  }, 3000);
+}
 
-    function startAuto(){
-      stopAuto();
-      auto = setInterval(() => {
-        index = (index + 1) % slides.length;
-        go(index);
-      }, 3000);
-    }
+function stopAuto(){
+  if(auto) clearInterval(auto);
+}
 
-    function stopAuto(){
-      if(auto) clearInterval(auto);
-    }
-
-    startAuto();
+startAuto();
 
     destaqueBox.addEventListener("touchstart", stopAuto);
     destaqueBox.addEventListener("mouseover", stopAuto);
-
-    destaqueBox.addEventListener("mouseleave", startAuto);
-    destaqueBox.addEventListener("touchend", startAuto);
 
     // BOTÕES
     const next = document.querySelector(".next");
     const prev = document.querySelector(".prev");
 
-    if(next && prev){
-      next.onclick = () => go((index + 1) % slides.length);
-      prev.onclick = () => go((index - 1 + slides.length) % slides.length);
-    }
+    next.onclick = () => {
+  index++;
+  if(index >= slides.length) index = 0;
+  atualizarSlider();
+};
+
+prev.onclick = () => {
+  index--;
+  if(index < 0) index = slides.length - 1;
+  atualizarSlider();
+};
+
+prev.onclick = () => {
+  if(animando) return;
+
+  if(index > 0){
+    go(index - 1);
+  } else {
+    go(slides.length - 1, false);
+  }
+};
   }
 
   // =====================
