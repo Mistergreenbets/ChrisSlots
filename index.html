@@ -590,7 +590,7 @@ function montarTela(data){
     if(slides.length === 0) return;
 
     let index = 0;
-let auto;
+    let auto = null;
 
 function atualizarSlider(){
   destaqueBox.style.transform = `translateX(-${index * 100}%)`;
@@ -598,20 +598,16 @@ function atualizarSlider(){
   dots.forEach(d => d.classList.remove("active"));
   dots[index].classList.add("active");
 }
-
 // =====================
 // 🔄 AUTO PLAY
 // =====================
 function startAuto(){
-  stopAuto();
+  if(auto) return; // 🔥 evita duplicar
 
   auto = setInterval(() => {
 
     index++;
-
-    if(index >= slides.length){
-      index = 0;
-    }
+    if(index >= slides.length) index = 0;
 
     atualizarSlider();
 
@@ -619,13 +615,20 @@ function startAuto(){
 }
 
 function stopAuto(){
-  if(auto) clearInterval(auto);
+  if(auto){
+    clearInterval(auto);
+    auto = null;
+  }
 }
 
+// inicia
 startAuto();
 
     destaqueBox.addEventListener("touchstart", stopAuto);
-    destaqueBox.addEventListener("mouseover", stopAuto);
+destaqueBox.addEventListener("mouseover", stopAuto);
+
+destaqueBox.addEventListener("touchend", startAuto);
+destaqueBox.addEventListener("mouseleave", startAuto);
 
     // BOTÕES
     const next = document.querySelector(".next");
