@@ -242,6 +242,8 @@ body{
   position: relative;
   margin: 15px;
   overflow: hidden; /* 🔥 quem corta é o container */
+  margin: 15px;
+  overflow: hidden; /* 🔥 ESSENCIAL */
 }
 
 #destaque{
@@ -254,7 +256,7 @@ body{
 .slide{
   flex: 0 0 100%;
   max-width: 100%;
-
+  box-sizing: border-box; /* 🔥 resolve o bug */
   background: linear-gradient(135deg,#ff7043,#d32f2f);
   border-radius: 20px;
   padding: 20px;
