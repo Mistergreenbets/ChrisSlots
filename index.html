@@ -404,6 +404,141 @@ body{
   0%{background-position:200% 0;}
   100%{background-position:-200% 0;}
 }
+.btn-add{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ff7043,#d84315);
+  color:white;
+  font-weight:bold;
+  font-size:14px;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.btn-add:active{
+  transform:scale(0.96);
+}
+
+.btn-add:hover{
+  opacity:.9;
+}
+
+#carrinhoBox{
+  animation: subir .3s ease;
+}
+
+@keyframes subir{
+  from{
+    transform:translateY(100%);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
+
+#carrinhoBox input,
+#carrinhoBox select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:14px;
+}
+
+#carrinhoBox hr{
+  border:none;
+  border-top:1px solid #eee;
+  margin:10px 0;
+}
+
+.btn-finalizar{
+  width:100%;
+  padding:14px;
+  background:#25d366;
+  color:white;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:bold;
+  margin-top:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+.qtd-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.btn-qtd{
+  width:32px;
+  height:32px;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(135deg,#ff7043,#d84315);
+  color:white;
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn-qtd:active{
+  transform:scale(0.9);
+}
+
+.qtd-num{
+  font-weight:bold;
+  font-size:14px;
+}
+
+#btnCarrinho{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+  background:#ff7043;
+  color:white;
+  padding:12px 16px;
+  border-radius:50px;
+  font-weight:bold;
+  box-shadow:0 4px 10px rgba(0,0,0,.3);
+  cursor:pointer;
+  display:none;
+}
+
+#badge{
+  background:white;
+  color:#ff7043;
+  border-radius:50%;
+  padding:2px 6px;
+  margin-left:5px;
+  font-size:12px;
+}
+
+.btn-close{
+  background:#eee;
+  border:none;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  font-size:16px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn-close:hover{
+  background:#ddd;
+}
+
+.btn-close:active{
+  transform:scale(0.9);
+}
 </style>
 </head>
 
@@ -482,7 +617,7 @@ body{
 <script>
 const API = "https://script.google.com/macros/s/AKfycby-rr2n8JzqPCowmC9sTW6RC2AR7f0tx_GZK05NeHEkvMaM40kmKmIVkvCaMtXWOy6Z/exec";
 
-const CACHE_KEY = "mercado_cache_v2";
+const CACHE_KEY = "mercado_cache_v4";
 
 // =========================
 // 🔄 LOADING (PRIMEIRO)
@@ -634,26 +769,15 @@ destaqueBox.addEventListener("mouseleave", startAuto);
     const next = document.querySelector(".next");
     const prev = document.querySelector(".prev");
 
-    next.onclick = () => {
-  index++;
-  if(index >= slides.length) index = 0;
-  atualizarSlider();
-};
-
-prev.onclick = () => {
+    prev.onclick = () => {
   index--;
   if(index < 0) index = slides.length - 1;
   atualizarSlider();
 };
-
-prev.onclick = () => {
-  if(animando) return;
-
-  if(index > 0){
-    go(index - 1);
-  } else {
-    go(slides.length - 1, false);
-  }
+next.onclick = () => {
+  index++;
+  if(index >= slides.length) index = 0;
+  atualizarSlider();
 };
   }
 
@@ -681,24 +805,299 @@ prev.onclick = () => {
     card.className = "card";
 
     card.innerHTML = `
-      ${desconto}
-      <img src="${p.imagem}" loading="lazy">
-      <div class="nome">${p.nome}</div>
-      <p>${p.descricao || ""}</p>
+  ${desconto}
+  <img src="${p.imagem}" loading="lazy">
+  <div class="nome">${p.nome}</div>
+  <p>${p.descricao || ""}</p>
 
-      ${promo > 0 ? `
-        <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
-        <div class="preco-card">R$ ${promo.toFixed(2)}</div>
-      ` : `
-        <div class="preco-card">R$ ${preco.toFixed(2)}</div>
-      `}
-    `;
+  ${promo > 0 ? `
+    <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+    <div class="preco-card">R$ ${promo.toFixed(2)}</div>
+  ` : `
+    <div class="preco-card">R$ ${preco.toFixed(2)}</div>
+  `}
 
-    grid.appendChild(card);
+  <button class="btn-add" onclick="addCarrinho('${p.nome}', ${promo > 0 ? promo : preco})">
+  🛒 Adicionar
+</button>
+`;
+
+grid.appendChild(card);
   });
 
 }
+
+// =====================
+  // 🛒 CARRINHO
+  // =====================
+let carrinho = [];
+
+function addCarrinho(nome, preco){
+
+  let item = carrinho.find(p => p.nome === nome);
+
+  if(item){
+    item.qtd++;
+  } else {
+    carrinho.push({ nome, preco, qtd: 1 });
+  }
+
+  renderCarrinho();
+}
+
+function mudarQtd(index, tipo){
+  if(tipo === "+") carrinho[index].qtd++;
+  if(tipo === "-") carrinho[index].qtd--;
+
+  if(carrinho[index].qtd <= 0){
+    carrinho.splice(index,1);
+  }
+
+  renderCarrinho();
+}
+
+function totalCarrinho(){
+  return carrinho.reduce((t,i)=> t + (i.preco * i.qtd),0);
+}
+
+// =====================
+  // 🛒 RENDER CARRINHO
+  // =====================
+  function renderCarrinho(){
+
+  const box = document.getElementById("itensCarrinho");
+
+  if(carrinho.length === 0){
+    document.getElementById("btnCarrinho").style.display = "none";
+    toggleCarrinho(false);
+    return;
+  }
+
+  // 🔥 só mostra depois que confirmou que tem item
+  document.getElementById("btnCarrinho").style.display = "block";
+  const totalItens = carrinho.reduce((t, i) => t + i.qtd, 0);
+document.getElementById("badge").innerText = totalItens;
+
+  box.innerHTML = "";
+
+  carrinho.forEach((item, i)=>{
+
+    box.innerHTML += `
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  ">
+    <div>
+      <b>${item.nome}</b><br>
+      R$ ${item.preco.toFixed(2)}
+    </div>
+
+    <div class="qtd-box">
+      <button class="btn-qtd" onclick="mudarQtd(${i}, '-')">-</button>
+      <span class="qtd-num">${item.qtd}</span>
+      <button class="btn-qtd" onclick="mudarQtd(${i}, '+')">+</button>
+    </div>
+  </div>
+`;
+  });
+
+  atualizarEntrega();
+}
+
+// =====================
+  // 🛒 CALCULAR ENTREGA
+  // =====================
+  function calcularEntrega(){
+
+  const bairro = document.getElementById("bairro").value;
+
+  const taxas = {
+    centro: 5,
+    aldeota: 6,
+    meireles: 6,
+    messejana: 8,
+    barra: 7
+  };
+
+  return taxas[bairro] || 10;
+}
+
+ // =====================
+  // 🛒 ATUAlIZAR ENTREGA
+  // =====================
+function atualizarEntrega(){
+
+  const subtotal = totalCarrinho();
+  const entrega = calcularEntrega();
+
+  document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+  document.getElementById("entrega").innerText = entrega.toFixed(2);
+  document.getElementById("total").innerText = (subtotal + entrega).toFixed(2);
+}
+// =====================
+  // 🛒 ENVIAR WHATSAPP
+  // =====================
+function finalizarPedido(){
+
+  if(carrinho.length === 0) return alert("Carrinho vazio");
+
+  const nome = document.getElementById("nomeCliente").value;
+  const endereco = document.getElementById("endereco").value;
+  const pagamento = document.getElementById("pagamento").value;
+  const telefone = document.getElementById("telefone").value;
+const bairro = document.getElementById("bairro").value;
+
+  let msg = "🛒 *NOVO PEDIDO* \n\n";
+
+  carrinho.forEach(item=>{
+    msg += `• ${item.nome} x${item.qtd} - R$ ${(item.preco * item.qtd).toFixed(2)}\n`;
+  });
+
+  let total = totalCarrinho();
+  let entrega = calcularEntrega();
+
+  msg += `\n💰 Subtotal: R$ ${total.toFixed(2)}`;
+  msg += `\n🚚 Entrega: R$ ${entrega.toFixed(2)}`;
+  msg += `\n💵 Total: R$ ${(total + entrega).toFixed(2)}`;
+
+  msg += `\n\n👤 Nome: ${nome}`;
+  msg += `\n📍 Endereço: ${endereco}`;
+  msg += `\n💳 Pagamento: ${pagamento}`;
+
+  const numero = "5585994083703";
+
+  const url = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+
+  // 🔥 SALVAR NO GOOGLE SHEETS
+  const itensFormatados = carrinho.map(item => 
+  `• ${item.nome} x${item.qtd} (R$ ${(item.preco * item.qtd).toFixed(2)})`
+).join("\n");
+
+fetch(API, {
+  method: "POST",
+  body: JSON.stringify({
+    tipo:"pedido",
+    nome,
+    telefone,
+    endereco,
+    bairro,
+    pagamento,
+    itens: itensFormatados,
+    total: total,
+    entrega: entrega
+  })
+});
+
+  // 📲 WHATSAPP
+  window.open(url, "_blank");
+}
+// =====================
+  // 🛒 ABRIR CARRINHO
+  // =====================
+function toggleCarrinho(force){
+
+  const box = document.getElementById("carrinhoBox");
+  const overlay = document.getElementById("carrinhoOverlay");
+
+  const abrir = force !== undefined ? force : box.style.display !== "block";
+
+  box.style.display = abrir ? "block" : "none";
+  overlay.style.display = abrir ? "block" : "none";
+}
+
+// clicar fora fecha
+document.getElementById("carrinhoOverlay").onclick = () => toggleCarrinho(false);
 </script>
 
+<div id="carrinhoOverlay" style="
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,0.5);
+display:none;
+z-index:998;
+"></div>
+
+<div id="carrinhoBox" style="
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:white;
+border-radius:20px 20px 0 0;
+padding:15px;
+max-height:80%;
+overflow:auto;
+display:none;
+z-index:999;
+box-shadow:0 -5px 20px rgba(0,0,0,.2);
+">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h3>🛒 Seu Pedido</h3>
+  <button class="btn-close" onclick="toggleCarrinho(false)">
+  <i class="fas fa-times"></i>
+</button>
+</div>
+
+<div id="itensCarrinho"></div>
+
+<hr>
+
+<div style="
+background:#fff3e0;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+">
+  <p>💰 Subtotal: R$ <span id="subtotal">0.00</span></p>
+  <p>🚚 Entrega: R$ <span id="entrega">0.00</span></p>
+  <p style="font-size:18px;font-weight:bold;color:#d84315;">
+    Total: R$ <span id="total">0.00</span>
+  </p>
+</div>
+
+<input id="nomeCliente" placeholder="Seu nome">
+<input id="telefone" placeholder="Telefone">
+
+<select id="bairro" onchange="atualizarEntrega()">
+  <option value="">Selecione o bairro</option>
+  <option value="centro">Centro</option>
+  <option value="aldeota">Aldeota</option>
+  <option value="meireles">Meireles</option>
+  <option value="messejana">Messejana</option>
+  <option value="barra">Barra</option>
+</select>
+
+<input id="endereco" placeholder="Rua, número...">
+
+<select id="pagamento">
+<option>PIX</option>
+<option>Dinheiro</option>
+<option>Cartão</option>
+</select>
+
+<button onclick="finalizarPedido()" style="
+width:100%;
+padding:12px;
+background:#25d366;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:bold;
+margin-top:10px;
+">
+📲 Enviar Pedido
+</button>
+</div> <!-- fecha carrinhoBox -->
+
+<!-- BOTÃO FLUTUANTE -->
+<div id="btnCarrinho" onclick="toggleCarrinho(true)">
+  🛒 <span id="badge">0</span>
+</div>
 </body>
 </html>
