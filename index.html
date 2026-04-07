@@ -480,9 +480,9 @@ body{
 <div class="whatsapp">💬</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbz-WZQZj0fe1ITL_wLSpEN3wdKOrhUAHFX4Ic9YpSVFUbvvTWxErccnYFOjb2cz_1m1/exec";
+const API = "https://script.google.com/macros/s/AKfycby-rr2n8JzqPCowmC9sTW6RC2AR7f0tx_GZK05NeHEkvMaM40kmKmIVkvCaMtXWOy6Z/exec";
 
-const CACHE_KEY = "mercado_cache_v1";
+const CACHE_KEY = "mercado_cache_v2";
 
 // =========================
 // 🔄 LOADING (PRIMEIRO)
@@ -563,14 +563,14 @@ function montarTela(data){
 
     lista.forEach((d, i) => {
 
-      const preco = Number(String(d.Preco).replace(",", ".")) || 0;
-      const promo = Number(String(d.Promocao).replace(",", ".")) || 0;
-      const img = d.Imagem || "https://via.placeholder.com/120";
+      const preco = Number(d.preco) || 0;
+      const promo = Number(d.promocao) || 0;
+      const img = d.imagem || "https://via.placeholder.com/120";
 
       destaqueBox.innerHTML += `
         <div class="slide">
-          <h3>${d.Nome}</h3>
-          <p>${d.Descricao || ""}</p>
+          <h3>${d.nome}</h3>
+          <p>${d.descricao || ""}</p>
 
           <div class="preco">R$ ${promo.toFixed(2)}</div>
           <div class="antigo">R$ ${preco.toFixed(2)}</div>
@@ -667,8 +667,8 @@ prev.onclick = () => {
 
   produtos.forEach(p => {
 
-    const preco = Number(String(p.Preco).replace(",", ".")) || 0;
-    const promo = Number(String(p.Promocao).replace(",", ".")) || 0;
+    const preco = Number(p.preco) || 0;
+    const promo = Number(p.promocao) || 0;
 
     let desconto = "";
 
@@ -682,9 +682,9 @@ prev.onclick = () => {
 
     card.innerHTML = `
       ${desconto}
-      <img src="${p.Imagem}" loading="lazy">
-      <div class="nome">${p.Nome}</div>
-      <p>${p.Descricao || ""}</p>
+      <img src="${p.imagem}" loading="lazy">
+      <div class="nome">${p.nome}</div>
+      <p>${p.descricao || ""}</p>
 
       ${promo > 0 ? `
         <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>

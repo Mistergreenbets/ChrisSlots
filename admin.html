@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Admin</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f3efe9;
+}
+
+/* TOPO */
+.topo{
+  height:200px;
+  background:url('https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1920,fit=crop/d95Z6K8vbvi74OZj/pngtree-supermarket-grocery-store-aisle-and-shelves-blurred-background-picture-image_15628118-EkpG4LQ04e7GZahV.jpg') center/cover;
+}
+
+/* LOGO */
+.logo{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  background:white;
+  margin:-50px auto 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+  overflow:hidden;
+}
+
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* TÍTULO */
+.titulo{
+  text-align:center;
+  font-size:22px;
+  color:#c62828;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+/* CARD FORM */
+.card{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  margin:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+/* INPUTS */
+input, select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:14px;
+}
+
+/* BOTÃO */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ff7043,#d32f2f);
+  color:white;
+  font-size:14px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:6px;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+/* STATUS */
+.status{
+  text-align:center;
+  margin-top:10px;
+  font-weight:bold;
+}
+
+/* GRID */
+.preview{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  padding:10px;
+}
+
+/* CARD PRODUTO */
+.prod-card{
+  background:white;
+  border-radius:15px;
+  padding:10px;
+  text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.prod-card img{
+  width:80px;
+  height:80px;
+  object-fit:contain;
+}
+
+.preco{
+  color:#ff6f00;
+  font-weight:bold;
+}
+
+/* BOTÕES CARD */
+.card-btn{
+  display:flex;
+  gap:5px;
+}
+
+.card-btn button{
+  flex:1;
+  font-size:12px;
+  padding:8px;
+}
+
+.delete{
+  background:#c62828;
+}
+
+@media(min-width:600px){
+  .card{
+    max-width:500px;
+    margin:auto;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topo"></div>
+
+<div class="logo">
+  <img src="logo.webp">
+</div>
+
+<div class="titulo">Painel Administrativo</div>
+
+<div class="card">
+
+<form id="form">
+
+<input placeholder="Nome do produto" id="nome" required>
+<input placeholder="Descrição" id="descricao">
+<input placeholder="Preço" id="preco" type="number" step="0.01">
+<input placeholder="Promoção" id="promocao" type="number" step="0.01">
+<input placeholder="URL da Imagem" id="imagem">
+
+<select id="categoria">
+  <option>Carnes</option>
+  <option>Bebidas</option>
+  <option>Alimentos</option>
+  <option>Limpeza</option>
+
+  <option>Hortifruti</option>
+  <option>Padaria</option>
+  <option>Frios e Laticínios</option>
+  <option>Congelados</option>
+  <option>Enlatados</option>
+  <option>Grãos e Cereais</option>
+  <option>Massas</option>
+  <option>Biscoitos e Snacks</option>
+  <option>Doces e Sobremesas</option>
+  <option>Temperos e Condimentos</option>
+  <option>Bebidas Alcoólicas</option>
+  <option>Bebidas Não Alcoólicas</option>
+  <option>Higiene Pessoal</option>
+  <option>Utilidades Domésticas</option>
+  <option>Pet Shop</option>
+  <option>Infantil</option>
+</select>
+
+<select id="destaque">
+  <option value="SIM">SIM</option>
+  <option value="NAO">NAO</option>
+</select>
+
+<button type="submit">💾 Salvar Produto</button>
+
+<div class="status" id="status"></div>
+
+</form>
+
+</div>
+
+<div class="titulo">Preview</div>
+<div class="preview" id="preview"></div>
+
+<div class="titulo">Produtos cadastrados</div>
+<div class="preview" id="lista"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycby-rr2n8JzqPCowmC9sTW6RC2AR7f0tx_GZK05NeHEkvMaM40kmKmIVkvCaMtXWOy6Z/exec";
+
+const form = document.getElementById("form");
+const status = document.getElementById("status");
+const preview = document.getElementById("preview");
+const lista = document.getElementById("lista");
+
+let editandoID = null;
+
+/* =========================
+   SALVAR / EDITAR
+========================= */
+form.addEventListener("submit", function(e){
+  e.preventDefault();
+
+  const data = {
+    id: editandoID,
+    nome: nome.value,
+    descricao: descricao.value,
+    preco: preco.value,
+    promocao: promocao.value,
+    imagem: imagem.value,
+    categoria: categoria.value,
+    destaque: destaque.value
+  };
+
+  status.innerHTML = "⏳ Salvando...";
+
+  // 🔥 METHOD OVERRIDE
+  if(editandoID){
+    data._method = "PUT";
+  }
+
+  fetch(API, {
+  method: "POST",
+  body: JSON.stringify(data)
+})
+.then(async res => {
+
+  const text = await res.text();
+
+  try {
+    const json = JSON.parse(text);
+
+    if(json.erro){
+      throw new Error(json.erro);
+    }
+
+    status.innerHTML = editandoID 
+      ? "✏️ Produto atualizado!"
+      : "✅ Produto cadastrado!";
+
+    mostrarPreview(data);
+    form.reset();
+    editandoID = null;
+
+    carregarProdutos();
+
+  } catch (e) {
+    throw new Error(text);
+  }
+
+})
+.catch(err => {
+  console.error(err);
+  status.innerHTML = "❌ " + err.message;
+});
+});
+
+/* =========================
+   PREVIEW
+========================= */
+function mostrarPreview(p){
+
+  const preco = Number(p.preco) || 0;
+  const promo = Number(p.promocao) || 0;
+
+  preview.innerHTML = `
+    <div class="prod-card">
+      <img src="${p.imagem}">
+      <div><b>${p.nome}</b></div>
+      <p>${p.descricao || ""}</p>
+
+      ${promo > 0 ? `
+        <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+        <div class="preco">R$ ${promo.toFixed(2)}</div>
+      ` : `
+        <div class="preco">R$ ${preco.toFixed(2)}</div>
+      `}
+    </div>
+  `;
+}
+
+/* =========================
+   LISTAR
+========================= */
+function carregarProdutos(){
+  fetch(API)
+  .then(res => res.json())
+  .then(data => {
+
+    if(!data.produtos){
+      console.error("Formato inválido:", data);
+      return;
+    }
+
+    renderLista(data.produtos); // 🔥 CORRETO
+
+  })
+  .catch(err => {
+    console.error("Erro ao carregar:", err);
+  });
+}
+
+/* =========================
+   RENDER
+========================= */
+function renderLista(produtos){
+
+  console.log("PRODUTOS:", produtos); // 👈 DEBUG
+
+  lista.innerHTML = "";
+
+  produtos.reverse().forEach(p => {
+
+    const preco = Number(p.preco) || 0;
+    const promo = Number(p.promocao) || 0;
+
+    lista.innerHTML += `
+      <div class="prod-card">
+        <img src="${p.imagem}">
+        <div><b>${p.nome}</b></div>
+
+        ${promo > 0 ? `
+          <div style="text-decoration:line-through">R$ ${preco.toFixed(2)}</div>
+          <div class="preco">R$ ${promo.toFixed(2)}</div>
+        ` : `
+          <div class="preco">R$ ${preco.toFixed(2)}</div>
+        `}
+
+        <div class="card-btn">
+          <button onclick='editar(${JSON.stringify(p)})'>✏️</button>
+          <button class="delete" onclick='excluir("${p.id}")'>🗑️</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   EDITAR
+========================= */
+function editar(p){
+
+  editandoID = p.id;
+
+  nome.value = p.nome;
+  descricao.value = p.descricao;
+  preco.value = p.preco;
+  promocao.value = p.promocao;
+  imagem.value = p.imagem;
+  categoria.value = p.categoria;
+  destaque.value = p.destaque;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  status.innerHTML = "✏️ Editando produto...";
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+function excluir(id){
+
+  if(!confirm("Deseja excluir este produto?")) return;
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      id: id,
+      _method: "DELETE"
+    })
+  })
+  .then(() => {
+    status.innerHTML = "🗑️ Produto excluído!";
+    carregarProdutos();
+  });
+}
+
+/* =========================
+   INIT
+========================= */
+carregarProdutos();
+</script>
+
+</body>
+</html>
